@@ -20,4 +20,5 @@ services:
     volumes:
       - ./pipeline:/app/pipeline
       - ./data:/app/data
+      - ./data_mock:/app/data_mock
       - ./cache:/app/cache

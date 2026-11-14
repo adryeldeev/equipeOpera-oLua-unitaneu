@@ -1,20 +1,22 @@
-"""Gera dados FALSOS (mock) em data/, seguindo o contrato de dados.
+"""Gera dados FALSOS (mock) em data_mock/, seguindo o contrato de dados.
 
-Serve para desenvolver o frontend antes do pipeline real existir.
+Serve para testar o frontend sem depender dos dados reais de data/.
 Usa só a biblioteca padrão + pyyaml. Reprodutível (semente fixa).
 
-    python pipeline/tools/gerar_mock.py
+    python pipeline/tools/gerar_mock.py              # grava em data_mock/
+    python pipeline/tools/gerar_mock.py --out outra  # outra pasta
 
 Saída:
-    data/sites.json
-    data/horizon/<id>.json
-    data/sky/<id>.json
+    data_mock/sites.json
+    data_mock/horizon/<id>.json
+    data_mock/sky/<id>.json
 Todo JSON leva "mock": true (em sites.json, em cada item da lista).
 
 NADA aqui é efeméride real: as fórmulas só imitam o comportamento
 qualitativo (Sol rasante no polo, Terra quase parada no céu).
 """
 
+import argparse
 import json
 import math
 import random
@@ -26,7 +28,7 @@ import yaml
 # Raiz do repositório: pipeline/tools/gerar_mock.py -> ../../
 ROOT = Path(__file__).resolve().parents[2]
 SITES_YAML = ROOT / "pipeline" / "config" / "sites.yaml"
-DATA = ROOT / "data"
+DATA_PADRAO = ROOT / "data_mock"  # nunca data/: lá ficam os dados reais
 
 SEED = 42
 START = datetime(2027, 1, 1, tzinfo=timezone.utc)
@@ -122,6 +124,10 @@ def write_json(path, obj, pretty=False):
 
 
 def main():
+    p = argparse.ArgumentParser(description="Gera dados mock (falsos).")
+    p.add_argument("--out", default=str(DATA_PADRAO), help="pasta de saída (padrão: data_mock/)")
+    DATA = Path(p.parse_args().out)
+
     with open(SITES_YAML, encoding="utf-8") as f:
         sites = yaml.safe_load(f)["sites"]
 
