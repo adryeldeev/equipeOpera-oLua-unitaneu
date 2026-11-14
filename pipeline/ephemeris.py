@@ -281,3 +281,111 @@ def gerar_ceu(site: dict, inicio: datetime, dias: float, passo_min: int) -> dict
         }
     saida["mock"] = False
     return saida
+
+
+# ---------------------------------------------------------------- CLI
+# Cache e plano B: grava data/sky/<id>.json para o caso de a API cair.
+#   python -m pipeline.ephemeris --start 2027-01-01 --days 365 --step-min 60 --out data/sky
+
+def _gravar_atomico(caminho: Path, obj, compacto=True):
+    """Grava em arquivo temporário na mesma pasta e troca com os.replace.
+
+    Quem lê (nginx, API) nunca vê um JSON pela metade.
+    """
+    import json
+    import os
+    import tempfile
+
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=caminho.parent, prefix=f".{caminho.name}.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            if compacto:
+                json.dump(obj, f, ensure_ascii=False, separators=(",", ":"))
+            else:
+                json.dump(obj, f, ensure_ascii=False, indent=2)
+            f.write("\n")
+        os.replace(tmp, caminho)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+
+def _data_utc(texto: str) -> datetime:
+    """'2027-01-01' ou '2027-01-01T06:00[:00][Z]'. Sem fuso = UTC."""
+    d = datetime.fromisoformat(texto.replace("Z", "+00:00"))
+    return d.replace(tzinfo=timezone.utc) if d.tzinfo is None else d.astimezone(timezone.utc)
+
+
+def main(argv=None) -> int:
+    import argparse
+    import json
+    import time
+
+    import skyfield
+    import yaml
+
+    p = argparse.ArgumentParser(prog="python -m pipeline.ephemeris",
+                                description="Gera data/sky/<id>.json (cache/plano B da API).")
+    p.add_argument("--sites", default=str(RAIZ / "pipeline" / "config" / "sites.yaml"))
+    p.add_argument("--start", required=True, help="início em UTC, ex.: 2027-01-01")
+    p.add_argument("--days", type=float, required=True)
+    p.add_argument("--step-min", type=int, required=True)
+    p.add_argument("--out", default=str(RAIZ / "data" / "sky"))
+    p.add_argument("--site", help="gera só este id")
+    a = p.parse_args(argv)
+
+    with open(a.sites, encoding="utf-8") as f:
+        sites = yaml.safe_load(f)["sites"]
+    if a.site:
+        sites = [s for s in sites if s["id"] == a.site]
+        if not sites:
+            p.error(f"site '{a.site}' não está em {a.sites}")
+
+    t0 = time.perf_counter()
+    rec = carregar_recursos()
+    print(f"recursos carregados em {time.perf_counter() - t0:.2f} s "
+          f"(intervalo {rec.inicio:%Y-%m-%d} a {rec.fim:%Y-%m-%d} UTC)")
+
+    out = Path(a.out)
+    inicio = _data_utc(a.start)
+    try:
+        for s in sites:
+            t1 = time.perf_counter()
+            ceu = gerar_ceu(s, inicio, a.days, a.step_min)
+            _gravar_atomico(out / f"{s['id']}.json", ceu)
+            print(f"ok  {s['id']:12} {len(ceu['sun']['az'])} instantes  {time.perf_counter() - t1:.2f} s")
+    except ErroEfemeride as e:
+        print(f"erro: {e}")
+        return 2
+
+    n = len(ceu["sun"]["az"])
+    fim = inicio.replace(microsecond=0) + timedelta(minutes=a.step_min * (n - 1))
+    meta = {
+        "fonte": "skyfield",
+        "skyfield_version": skyfield.__version__,
+        "kernels": list(rec.kernels),
+        "frame": FRAME_CONTRATO,
+        "frame_spice": FRAME_SPICE,
+        "inicio": ceu["start"],
+        "fim": fim.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "step_min": a.step_min,
+        "n_instantes": n,
+        "sites": [s["id"] for s in sites],
+        "gerado_em": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
+    # Com --site, mantém na lista os outros locais já gerados com os
+    # mesmos parâmetros (o _meta continua descrevendo a pasta inteira).
+    meta_path = out / "_meta.json"
+    if a.site and meta_path.exists():
+        antigo = json.loads(meta_path.read_text(encoding="utf-8"))
+        chaves = ("inicio", "fim", "step_min", "n_instantes", "kernels")
+        if all(antigo.get(k) == meta[k] for k in chaves):
+            meta["sites"] = sorted(set(antigo.get("sites", [])) | set(meta["sites"]))
+    _gravar_atomico(meta_path, meta, compacto=False)
+    print(f"_meta.json gravado em {out}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
