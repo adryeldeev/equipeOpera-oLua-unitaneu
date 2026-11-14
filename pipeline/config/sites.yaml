@@ -1,0 +1,48 @@
+# Locais de pouso analisados pela ferramenta.
+#
+# ATENÇÃO: as coordenadas abaixo são APROXIMADAS (centros de crateras /
+# pontos de referência genéricos) e DEVEM ser verificadas depois contra
+# fontes oficiais (IAU/USGS Gazetteer, listas de regiões candidatas do
+# Artemis, produtos do LOLA). Malapert, por exemplo, tem mais de um ponto
+# de referência (o pico do maciço e a região candidata "Malapert Massif").
+#
+# Convenções (contrato de dados):
+#   lat: graus, negativa no hemisfério sul
+#   lon: graus, LESTE positiva (-180..180)
+#   id:  minúsculo, sem espaços; vira nome de arquivo em data/horizon e data/sky
+
+sites:
+  - id: shackleton
+    name: Cratera Shackleton
+    lat: -89.90
+    lon: 0.0
+    category: polo_sul
+    mission: Artemis (região candidata)
+
+  - id: malapert
+    name: Maciço Malapert
+    lat: -86.00
+    lon: 0.0
+    category: polo_sul
+    mission: Artemis III (região candidata)
+
+  - id: nobile
+    name: Cratera Nobile
+    lat: -85.29
+    lon: 53.54
+    category: polo_sul
+    mission: VIPER (alvo original)
+
+  - id: haworth
+    name: Cratera Haworth
+    lat: -87.45
+    lon: -4.14
+    category: polo_sul
+    mission: Artemis III (região candidata)
+
+  - id: apollo11
+    name: Apollo 11 (Mar da Tranquilidade)
+    lat: 0.674
+    lon: 23.473
+    category: referencia
+    mission: Apollo 11 (1969), referência fora do polo

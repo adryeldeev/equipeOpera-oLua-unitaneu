@@ -1,0 +1,47 @@
+[
+  {
+    "id": "shackleton",
+    "name": "Cratera Shackleton",
+    "lat": -89.9,
+    "lon": 0.0,
+    "category": "polo_sul",
+    "mission": "Artemis (região candidata)",
+    "mock": true
+  },
+  {
+    "id": "malapert",
+    "name": "Maciço Malapert",
+    "lat": -86.0,
+    "lon": 0.0,
+    "category": "polo_sul",
+    "mission": "Artemis III (região candidata)",
+    "mock": true
+  },
+  {
+    "id": "nobile",
+    "name": "Cratera Nobile",
+    "lat": -85.29,
+    "lon": 53.54,
+    "category": "polo_sul",
+    "mission": "VIPER (alvo original)",
+    "mock": true
+  },
+  {
+    "id": "haworth",
+    "name": "Cratera Haworth",
+    "lat": -87.45,
+    "lon": -4.14,
+    "category": "polo_sul",
+    "mission": "Artemis III (região candidata)",
+    "mock": true
+  },
+  {
+    "id": "apollo11",
+    "name": "Apollo 11 (Mar da Tranquilidade)",
+    "lat": 0.674,
+    "lon": 23.473,
+    "category": "referencia",
+    "mission": "Apollo 11 (1969), referência fora do polo",
+    "mock": true
+  }
+]

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pouso no Polo Sul Lunar</title>
+  <style>
+    :root { --bg: #0e1116; --fg: #e6e8eb; --muted: #9aa3ad; --card: #171b22; --line: #2a303a; --warn: #f0b429; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px 16px; background: var(--bg); color: var(--fg);
+           font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 860px; margin: 0 auto; }
+    h1 { margin: 0 0 4px; font-size: 1.5rem; }
+    p.sub { margin: 0 0 24px; color: var(--muted); }
+    ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+    li { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+    .name { font-weight: 600; }
+    .meta { color: var(--muted); font-size: .9rem; }
+    .tag { display: inline-block; font-size: .75rem; padding: 0 6px; border-radius: 4px;
+           border: 1px solid var(--line); margin-left: 6px; color: var(--muted); }
+    .tag.mock { color: var(--warn); border-color: var(--warn); }
+    .erro { color: #ff6b6b; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Pouso no Polo Sul Lunar</h1>
+    <p class="sub">Sol (energia) e Terra (comunicação) em relação ao horizonte do terreno.</p>
+    <ul id="sites"><li class="meta">Carregando locais…</li></ul>
+  </main>
+
+  <script type="module">
+    import { loadSites } from "./js/data.js";
+
+    const list = document.getElementById("sites");
+
+    function fmtCoord(lat, lon) {
+      // lat negativa = Sul; lon positiva = Leste (contrato de dados)
+      const la = `${Math.abs(lat).toFixed(2)}° ${lat < 0 ? "S" : "N"}`;
+      const lo = `${Math.abs(lon).toFixed(2)}° ${lon < 0 ? "O" : "L"}`;
+      return `${la}, ${lo}`;
+    }
+
+    loadSites()
+      .then((sites) => {
+        list.replaceChildren(...sites.map((s) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <div><span class="name"></span><span class="tag cat"></span>${s.mock ? '<span class="tag mock">mock</span>' : ""}</div>
+            <div class="meta coords"></div>
+            <div class="meta mission"></div>`;
+          // textContent evita injetar HTML vindo dos dados
+          li.querySelector(".name").textContent = s.name;
+          li.querySelector(".cat").textContent = s.category;
+          li.querySelector(".coords").textContent = fmtCoord(s.lat, s.lon);
+          li.querySelector(".mission").textContent = s.mission;
+          return li;
+        }));
+      })
+      .catch((err) => {
+        list.innerHTML = '<li class="erro"></li>';
+        list.firstChild.textContent =
+          `Não foi possível ler data/sites.json (${err.message}). ` +
+          "Abra via servidor local (veja o README), não com duplo clique.";
+      });
+  </script>
+</body>
+</html>

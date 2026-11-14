@@ -1,0 +1,23 @@
+services:
+  # Servidor estático do frontend: http://localhost:8080/web/
+  # web/ e data/ são montados lado a lado, então o caminho relativo
+  # "../data/" funciona igual ao "python -m http.server" na raiz.
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web:/usr/share/nginx/html/web:ro
+      - ./data:/usr/share/nginx/html/data:ro
+
+  # Pipeline Python: só roda sob demanda.
+  #   docker compose run --rm pipeline
+  pipeline:
+    build:
+      context: .
+      dockerfile: pipeline/Dockerfile
+    profiles: ["tools"]
+    volumes:
+      - ./pipeline:/app/pipeline
+      - ./data:/app/data
+      - ./cache:/app/cache
