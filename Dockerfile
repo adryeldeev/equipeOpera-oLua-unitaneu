@@ -1,7 +1,7 @@
 # Imagem da API + site. Contexto de build = raiz do repositório.
-#   docker build -f api/Dockerfile -t landerbnb .
+#   docker build -t landerbnb .
 #   docker run -p 8001:8001 landerbnb      ->  http://localhost:8001/
-# Serve para hospedar (Render, Railway, Fly.io...): um container só com a API
+# Serve para hospedar (Hugging Face Spaces, Railway, Fly.io...): um container só com a API
 # e o front (web/). Os kernels (~45 MB) são baixados para cache/ no 1º startup;
 # sem rede, a API segue no plano B com data/sky (2027).
 FROM python:3.11-slim
@@ -16,7 +16,8 @@ COPY pipeline/ /app/pipeline/
 COPY api/ /app/api/
 COPY web/ /app/web/
 COPY data/ /app/data/
-RUN mkdir -p /app/cache
+# cache/ gravável por qualquer usuário: o Hugging Face roda o container como UID 1000.
+RUN mkdir -p /app/cache && chmod 777 /app/cache
 
 # A maioria dos serviços define a porta em $PORT; localmente usa 8001.
 ENV PORT=8001

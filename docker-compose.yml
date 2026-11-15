@@ -16,7 +16,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: api/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8001:8001"
     volumes:
