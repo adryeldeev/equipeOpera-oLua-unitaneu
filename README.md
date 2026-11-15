@@ -24,7 +24,7 @@ Feita para planejadores de missão, educadores e público geral.
                               │
             ┌─────────────────┴──────────────────┐
             ▼                                    ▼
-   api/ (FastAPI, outra tarefa)         pipeline/export.py
+   api/ (FastAPI, porta 8001)           pipeline/export.py
    chama ephemeris + metrics            data/*.json (plano B) e --check
             │                                    │
             └────────────►  front  ◄─────────────┘
@@ -48,6 +48,7 @@ Feita para planejadores de missão, educadores e público geral.
 │   ├── tools/gerar_mock.py     # dados falsos em data_mock/
 │   ├── tools/escolher_pontos.py   # deriva pontos de pouso do DEM (topo, borda mais iluminada)
 │   └── tools/validar_horizons.py  # confere ephemeris contra a API Horizons
+├── api/                        # FastAPI: main.py, tests/, Dockerfile, requirements*.txt
 ├── web/                        # front estático
 ├── data/                       # sites.json, _meta.json, horizon/<id>.json, sky/<id>.json, sky/_meta.json
 ├── data_mock/                  # mesmo contrato, dados falsos
@@ -64,12 +65,13 @@ Requisitos: Python 3.11+ e um navegador moderno.
 ```powershell
 python -m venv .venv
 .venv\Scripts\Activate.ps1
-pip install -r pipeline/requirements-dev.txt
+pip install -r api/requirements-dev.txt     # inclui o pipeline e o pytest
 
-python -m http.server 8000      # na RAIZ do repositório
+python -m http.server 8000                  # front, na RAIZ do repositório
+uvicorn api.main:app --port 8001 --reload   # API, em outro terminal, também na raiz
 ```
 
-Abra http://localhost:8000/web/. Abrir o `web/index.html` com duplo clique **não funciona**, porque o
+Abra http://localhost:8000/web/ (front) e http://localhost:8001/docs (API). Abrir o `web/index.html` com duplo clique **não funciona**, porque o
 navegador bloqueia a leitura dos JSONs em `file://`.
 
 Se o `Activate.ps1` for bloqueado: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
@@ -77,7 +79,7 @@ Se o `Activate.ps1` for bloqueado: `Set-ExecutionPolicy -Scope Process -Executio
 ### Docker
 
 ```powershell
-docker compose up web                                              # http://localhost:8080/web/
+docker compose up web api                                          # front :8080/web/ e API :8001/docs
 docker compose run --rm pipeline python -m pipeline.export --check
 docker compose run --rm pipeline python -m pipeline.ephemeris --start 2027-01-01 --days 365 --step-min 60 --out data/sky
 ```
@@ -102,7 +104,7 @@ python -m pipeline.export --out data --site malapert --start 2027-03-01 --days 4
 python -m pipeline.export --check
 
 # Testes (sem rede) e validação contra o Horizons (com rede)
-python -m pytest pipeline/tests -v
+python -m pytest pipeline/tests api/tests -v
 python pipeline/tools/validar_horizons.py
 
 # Dados falsos
@@ -112,6 +114,35 @@ python pipeline/tools/gerar_mock.py
 O `export` **não recalcula** céu nem horizonte: gera `data/sites.json` e `data/_meta.json` (data de geração e
 quais arquivos são mock) e aponta o que falta ou não cobre o período pedido. Toda escrita é atômica
 (arquivo temporário + rename).
+
+## API (api/main.py)
+
+FastAPI sobre o pipeline. Documentação interativa em http://localhost:8001/docs. Todas as rotas são GET
+e devolvem JSON.
+
+| Rota | O que devolve |
+|---|---|
+| `/api/saude` | estado, se as efemérides carregaram, intervalo suportado e padrões |
+| `/api/sites`, `/api/sites/{id}` | locais (`data/sites.json`) |
+| `/api/sites/{id}/horizonte` | horizonte do relevo (`data/horizon/<id>.json`) |
+| `/api/sites/{id}/ceu?inicio=&dias=30&passo_min=60` | Sol e Terra no período (contrato do céu) |
+| `/api/sites/{id}/metricas?inicio=&janela_h=720&ok=0.5&crit=0.2` | saída de `calcular_metricas` + `fonte` |
+| `/api/sites/{id}/atrasos?inicio=&janela_h=720&atraso_max_dias=14` | `{..., serie:[{atraso_dias, score, class}]}` |
+
+Exemplo: `GET /api/sites/malapert/metricas?inicio=2027-03-01T00:00:00Z`
+
+- `inicio` é a data de pouso em ISO 8601; sem fuso, vale UTC.
+- **Limiares**: frações de 0 a 1. Se algum vier maior que 1, os dois são tratados como porcentagem
+  (`ok=50&crit=20` dá 0,5 e 0,2).
+- **Erros** em português: 404 para local inexistente, 422 para parâmetro inválido, período fora do
+  intervalo ou `crit ≥ ok`.
+- **Plano B**: se os kernels não carregarem no startup (sem rede, por exemplo), a API usa
+  `data/sky/<id>.json` (2027, passo de 60 min) e avisa em `fonte.ceu`. Os resultados são idênticos aos
+  do cálculo na hora (há um teste para isso).
+- `fonte.horizonte` diz se o horizonte é real (LOLA) ou mock.
+- **Variáveis de ambiente**: `DADOS_DIR` (padrão `data/`), `CORS_ORIGENS` (padrão: `localhost:8000` e
+  `localhost:8080`) e `BAIXAR_KERNELS=0`, para não baixar nada no startup.
+- **Desempenho**: ~20 ms por chamada de métricas ou atrasos (janela de 30 dias, calculada na hora).
 
 ## Origem dos dados
 
@@ -263,8 +294,8 @@ função (`regra_visivel`), para a equipe poder trocar por "fração do disco".
   `python pipeline/tools/escolher_pontos.py` (~4 min).
 - **Altura do observador** de 2 m a confirmar (antena, painel).
 - Conferir o horizonte com uma referência publicada (mapas de iluminação do LOLA/PGDA).
-- **API** (`api/`, outra tarefa): importar `calcular_metricas`, `serie_por_atraso`, `indice_de` e
-  `validar_metricas`, e converter limiares de 0–100 para fração.
 - **Janela padrão** de 720 h a confirmar.
 - Regra do disco ("qualquer parte") vs. "fração do disco": decisão da equipe.
-- Front em React e uso das métricas no front: ainda não existem.
+- **Front**: consumir a API (local, data de pouso, métricas, faixa de incerteza, gráfico de atraso). O
+  React ainda não existe; hoje o `web/` só lista os locais.
+- API: o plano B só cobre 2027 com passo de 60 min. Para outros anos, é preciso gerar `data/sky` de novo.
