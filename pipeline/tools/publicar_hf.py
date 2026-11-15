@@ -61,6 +61,18 @@ Published from commit `{commit}`.
 """
 
 
+def token_do_env() -> str:
+    """HF_TOKEN do arquivo .env da raiz (fora do git), se existir."""
+    arq = RAIZ / ".env"
+    if not arq.exists():
+        return ""
+    for linha in arq.read_text(encoding="utf-8").splitlines():
+        linha = linha.strip()
+        if linha.startswith("HF_TOKEN="):
+            return linha.split("=", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+
 def rodar(cmd, cwd, ocultar=None):
     r = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True)
     saida = (r.stdout + r.stderr).strip()
@@ -122,9 +134,10 @@ def main(argv=None) -> int:
         print(f"ok  site do commit {commit} montado em {destino}")
         return 0
 
-    token = os.environ.get("HF_TOKEN", "").strip()
+    token = os.environ.get("HF_TOKEN", "").strip() or token_do_env()
     if not token:
-        p.error("defina a variável de ambiente HF_TOKEN com um token de escrita do Hugging Face")
+        p.error("token não encontrado: cole o token do Hugging Face no arquivo .env "
+                "(linha HF_TOKEN=hf_...) ou defina a variável de ambiente HF_TOKEN")
     usuario = a.space.split("/")[0]
 
     with tempfile.TemporaryDirectory(prefix="hf-space-") as tmp:
