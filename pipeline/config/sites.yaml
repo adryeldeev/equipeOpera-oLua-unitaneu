@@ -18,20 +18,20 @@ sites:
   # derivado: ponto com mais Sol no anel da borda (0,9–1,3 × raio de 10,5 km)
   # em volta do centro da cratera (-89,67°, 129,78°E, Wikipedia).
   - id: shackleton
-    name: Borda da Shackleton
+    name: Shackleton Rim
     lat: -89.7682
     lon: -156.4384
     category: polo_sul
-    mission: Artemis (borda da Shackleton)
+    mission: Artemis (Shackleton rim)
 
   # derivado: centro do pixel mais alto do LDEM_80S_80M (5.172 m) a até
   # 15 km de (-86°, 0°); o pico fica "quase em 0° de longitude".
   - id: malapert
-    name: Topo do Maciço Malapert
+    name: Malapert Massif Summit
     lat: -85.9876
     lon: 2.0528
     category: polo_sul
-    mission: Artemis III (região Malapert Massif)
+    mission: Artemis III (Malapert Massif region)
 
   # publicado: melhor ponto da região Nobile Rim 2 segundo "Evaluating
   # potential landing sites for the Artemis III mission using a multi-criteria
@@ -41,30 +41,30 @@ sites:
     lat: -84.20156
     lon: 60.69989
     category: polo_sul
-    mission: Artemis III (região Nobile Rim 2)
+    mission: Artemis III (Nobile Rim 2 region)
 
   # derivado: ponto com mais Sol no anel da borda (0,9–1,3 × raio de 25,5 km)
   # em volta do centro da cratera (-87,45°, -4,14°, conferido no DEM: o fundo
   # fica ~3,2 km abaixo do anel).
   - id: haworth
-    name: Borda da Haworth
+    name: Haworth Rim
     lat: -86.8829
     lon: -19.0389
     category: polo_sul
-    mission: Artemis III (região Haworth)
+    mission: Artemis III (Haworth region)
 
   # publicado: ponto de pouso real da IM-2 (Intuitive Machines, 2025),
   # Wikipedia "Mons Mouton".
   - id: mons_mouton
-    name: Mons Mouton (pouso da IM-2)
+    name: Mons Mouton (IM-2 landing site)
     lat: -84.7906
     lon: 29.1957
     category: polo_sul
-    mission: IM-2 (2025); Artemis III (região Mons Mouton)
+    mission: IM-2 (2025); Artemis III (Mons Mouton region)
 
   - id: apollo11
-    name: Apollo 11 (Mar da Tranquilidade)
+    name: Apollo 11 (Sea of Tranquility)
     lat: 0.674
     lon: 23.473
     category: referencia
-    mission: Apollo 11 (1969), referência fora do polo
+    mission: Apollo 11 (1969), non-polar reference

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LanderBnB</title>
-    <!-- Vazio = descobre sozinho (mesma origem ou http://localhost:8001). -->
+    <!-- Empty = auto-detect (same origin or http://localhost:8001). -->
     <meta name="api-base" content="">
     <link rel="stylesheet" href="style.css">
 
@@ -30,7 +30,7 @@
                 <p>NASA Space Apps Challenge 2026: The Next Frontier</p>
             </div>
         </div>
-        <button class="botao-configuracoes" type="button" aria-label="Configurações">⚙</button>
+        <button class="botao-configuracoes" type="button" aria-label="Settings">⚙</button>
     </header>
 
     <p class="aviso-api" id="aviso-api" role="status" aria-live="polite" hidden></p>
@@ -40,42 +40,42 @@
 
         <!-- MENU LATERAL ESQUERDO -->
         <aside class="menu-lateral">
-            <h2 class="titulo-menu">Guia de Passos</h2>
-            <nav class="lista-passos" aria-label="Etapas da missão">
+            <h2 class="titulo-menu">Mission Steps</h2>
+            <nav class="lista-passos" aria-label="Mission steps">
                 <button class="botao-passo ativo" type="button" data-etapa="localizacao" aria-current="step">
                     <span class="numero-passo">01</span>
-                    <span class="texto-passo">Localização</span>
+                    <span class="texto-passo">Location</span>
                     <span class="seta-passo">›</span>
                 </button>
                 <button class="botao-passo" type="button" data-etapa="data-hora">
                     <span class="numero-passo">02</span>
-                    <span class="texto-passo">Data/Hora</span>
+                    <span class="texto-passo">Date/Time</span>
                     <span class="seta-passo">›</span>
                 </button>
                 <button class="botao-passo" type="button" data-etapa="sol-terra">
                     <span class="numero-passo">03</span>
-                    <span class="texto-passo">Visualize Sol/Terra</span>
+                    <span class="texto-passo">View Sun/Earth</span>
                     <span class="seta-passo">›</span>
                 </button>
                 <button class="botao-passo" type="button" data-etapa="energia">
                     <span class="numero-passo">04</span>
-                    <span class="texto-passo">Consulte Energia</span>
+                    <span class="texto-passo">Check Power</span>
                     <span class="seta-passo">›</span>
                 </button>
                 <button class="botao-passo" type="button" data-etapa="comunicacao">
                     <span class="numero-passo">05</span>
-                    <span class="texto-passo">Comunicação</span>
+                    <span class="texto-passo">Communication</span>
                     <span class="seta-passo">›</span>
                 </button>
             </nav>
         </aside>
 
         <!-- VISUALIZAÇÃO DA LUA 3D -->
-        <section class="area-mapa" aria-label="Lua 3D">
+        <section class="area-mapa" aria-label="3D Moon">
             <div class="visualizador-lua">
-                <h2 class="titulo-visualizador">Exploração Lunar 3D</h2>
+                <h2 class="titulo-visualizador">3D Lunar Exploration</h2>
                 <div class="container-lua" id="lua-3d"></div>
-                <p class="instrucao-lua">Arraste para girar · role para aproximar · clique num local</p>
+                <p class="instrucao-lua">Drag to rotate · scroll to zoom · click a site</p>
             </div>
         </section>
 
@@ -84,115 +84,115 @@
 
             <!-- GUIA DA MISSÃO -->
             <section class="card-painel">
-                <h2>Guia de Passos da Missão</h2>
+                <h2>Mission Guide</h2>
 
                 <div class="etapas-missao">
-                    <div class="etapa atual" data-indicador-etapa="localizacao"><span>1</span><small>Local</small></div>
-                    <div class="etapa" data-indicador-etapa="data-hora"><span>2</span><small>Data</small></div>
-                    <div class="etapa" data-indicador-etapa="sol-terra"><span>3</span><small>Sol/Terra</small></div>
-                    <div class="etapa" data-indicador-etapa="energia"><span>4</span><small>Energia</small></div>
-                    <div class="etapa" data-indicador-etapa="comunicacao"><span>5</span><small>Comun.</small></div>
+                    <div class="etapa atual" data-indicador-etapa="localizacao"><span>1</span><small>Site</small></div>
+                    <div class="etapa" data-indicador-etapa="data-hora"><span>2</span><small>Date</small></div>
+                    <div class="etapa" data-indicador-etapa="sol-terra"><span>3</span><small>Sun/Earth</small></div>
+                    <div class="etapa" data-indicador-etapa="energia"><span>4</span><small>Power</small></div>
+                    <div class="etapa" data-indicador-etapa="comunicacao"><span>5</span><small>Comms</small></div>
                 </div>
 
                 <div class="conteudos-etapa" aria-live="polite">
                     <div class="resumo-data-missao" id="resumo-data-missao" hidden>
-                        <span>Data/hora da missão (pouso):</span>
+                        <span>Mission date/time (landing):</span>
                         <strong id="valor-resumo-data-missao"></strong>
                     </div>
 
                     <section class="conteudo-etapa" data-conteudo-etapa="localizacao">
-                        <h3>Local selecionado</h3>
-                        <strong class="valor-etapa" id="valor-etapa-localizacao">Nenhum local selecionado</strong>
+                        <h3>Selected site</h3>
+                        <strong class="valor-etapa" id="valor-etapa-localizacao">No site selected</strong>
                         <span class="detalhe-etapa" id="coordenadas-etapa-localizacao">
-                            Selecione um local de pouso nos cards ou na Lua.
+                            Select a landing site in the cards or on the Moon.
                         </span>
                     </section>
 
                     <section class="conteudo-etapa" data-conteudo-etapa="data-hora" hidden>
-                        <h3>Data e horário da missão</h3>
+                        <h3>Mission date and time</h3>
                         <label class="campo-etapa" for="data-missao">
-                            Data
+                            Date
                             <input type="date" id="data-missao">
                         </label>
                         <label class="campo-etapa" for="hora-missao">
-                            Horário (fuso do seu navegador; convertido para UTC)
+                            Time (your browser time zone; converted to UTC)
                             <input type="time" id="hora-missao" step="3600">
                         </label>
                         <span class="detalhe-etapa">
-                            As métricas usam uma janela de 30 dias a partir desse instante
-                            (pouco mais de um dia solar lunar).
+                            Metrics use a 30-day window starting at this instant
+                            (a bit more than one lunar solar day).
                         </span>
                     </section>
 
                     <section class="conteudo-etapa" data-conteudo-etapa="sol-terra" hidden>
-                        <h3>Sol e Terra no instante do pouso</h3>
+                        <h3>Sun and Earth at landing time</h3>
                         <svg class="grafico-ceu" id="grafico-ceu" role="img"
-                             aria-label="Horizonte do relevo com as posições do Sol e da Terra"></svg>
+                             aria-label="Terrain horizon with the Sun and Earth positions"></svg>
                         <p class="legenda-ceu">
-                            <span class="chip relevo"></span>relevo (LOLA)
-                            <span class="chip sol"></span>Sol
-                            <span class="chip terra"></span>Terra
+                            <span class="chip relevo"></span>terrain (LOLA)
+                            <span class="chip sol"></span>Sun
+                            <span class="chip terra"></span>Earth
                         </p>
-                        <p class="detalhe-etapa texto-sol-terra" id="texto-sol-terra">Selecione um local (etapa 1).</p>
+                        <p class="detalhe-etapa texto-sol-terra" id="texto-sol-terra">Select a site (step 1).</p>
                         <span class="aviso-simulacao-etapa">
-                            Visível = alguma parte do disco acima do relevo naquele azimute.
+                            Visible = any part of the disk above the terrain at that azimuth.
                         </span>
                     </section>
 
                     <section class="conteudo-etapa" data-conteudo-etapa="energia" hidden>
-                        <h3>Energia solar</h3>
-                        <strong class="valor-etapa" id="valor-etapa-energia">Selecione um local de pouso.</strong>
+                        <h3>Solar power</h3>
+                        <strong class="valor-etapa" id="valor-etapa-energia">Select a landing site.</strong>
 
                         <div class="parametros-energia">
                             <label class="campo-energia" for="potencia-paineis">
-                                Potência nominal dos painéis (W)
+                                Rated panel power (W)
                                 <input type="number" id="potencia-paineis" min="0.01" step="any">
                             </label>
                             <label class="campo-energia" for="consumo-missao">
-                                Consumo elétrico da missão (W)
+                                Mission power draw (W)
                                 <input type="number" id="consumo-missao" min="0" step="any">
                             </label>
                             <label class="campo-energia" for="capacidade-bateria">
-                                Capacidade da bateria (Wh)
+                                Battery capacity (Wh)
                                 <input type="number" id="capacidade-bateria" min="0.01" step="any">
                             </label>
                             <label class="campo-energia" for="carga-bateria">
-                                Carga inicial da bateria (%)
+                                Initial battery charge (%)
                                 <input type="number" id="carga-bateria" min="0" max="100" step="any">
                             </label>
                             <label class="campo-energia" for="eficiencia-paineis">
-                                Eficiência do sistema (%)
+                                System efficiency (%)
                                 <input type="number" id="eficiencia-paineis" min="0.01" max="100" step="any">
                             </label>
                         </div>
                         <p class="detalhe-etapa">
-                            Os mesmos parâmetros são usados para comparar todos os locais, hora a hora,
-                            com a visibilidade real do Sol. Modelo simples: com Sol, gera potência × eficiência;
-                            sem Sol, gera 0. Estimativa, não previsão operacional certificada.
+                            The same parameters are used to compare every site, hour by hour,
+                            with the real Sun visibility. Simple model: with Sun, output = power × efficiency;
+                            without Sun, 0. An estimate, not a certified operational forecast.
                         </p>
                         <div class="resultados-simulacao-energia">
-                            <h4>Comparação energética</h4>
+                            <h4>Power comparison</h4>
                             <p class="estado-simulacao-energia" id="estado-simulacao-energia" role="status" aria-live="polite"></p>
                             <p class="resumo-parametros-energia" id="resumo-parametros-energia"></p>
                             <ul class="lista-resultados-energia" id="lista-resultados-energia"></ul>
                         </div>
                         <div class="calculo-elevacao-solar">
-                            <h4>Sol no instante do pouso</h4>
+                            <h4>Sun at landing time</h4>
                             <p class="estado-calculo-elevacao" id="estado-calculo-elevacao" role="status" aria-live="polite"></p>
                             <ul class="lista-elevacao-solar" id="lista-elevacao-solar"></ul>
                             <p class="aviso-topografia-solar">
-                                Relevo do LOLA (80–240 m por pixel): rochas e crateras menores não entram.
-                                O erro do relevo (~1–2°) é comparável à altura do Sol no polo, por isso
-                                os cards mostram a faixa de incerteza.
+                                LOLA terrain (80–240 m per pixel): boulders and smaller craters are not included.
+                                The terrain error (~1–2°) is comparable to the Sun height at the pole, so
+                                the cards show an uncertainty range.
                             </p>
                         </div>
                     </section>
 
                     <section class="conteudo-etapa" data-conteudo-etapa="comunicacao" hidden>
-                        <h3>Comunicação direta com a Terra</h3>
-                        <strong class="valor-etapa" id="valor-etapa-comunicacao">Selecione um local de pouso.</strong>
+                        <h3>Direct-to-Earth communication</h3>
+                        <strong class="valor-etapa" id="valor-etapa-comunicacao">Select a landing site.</strong>
                         <span class="aviso-simulacao-etapa">
-                            Só a visada direta Terra–local. Fora do escopo: antenas na Terra e satélites de relé.
+                            Direct line of sight to Earth only. Out of scope: ground-station availability and relay satellites.
                         </span>
                     </section>
                 </div>
@@ -200,20 +200,20 @@
 
             <!-- SIMULADOR DE ATRASO -->
             <section class="card-painel">
-                <h2>Simulador de Atraso</h2>
-                <div class="valor-atraso"><span id="dias-atraso">+0 dias</span></div>
-                <input type="range" id="simulador-atraso" min="0" max="14" value="0" aria-label="Dias de atraso">
-                <div class="limites-atraso"><span>0 dias</span><span>+14 dias</span></div>
-                <svg class="grafico-atraso" id="grafico-atraso" role="img" aria-label="Score por dia de atraso"></svg>
-                <p class="resultado-atraso" id="resultado-atraso" aria-live="polite">Selecione um local para simular o atraso.</p>
+                <h2>Delay Simulator</h2>
+                <div class="valor-atraso"><span id="dias-atraso">+0 days</span></div>
+                <input type="range" id="simulador-atraso" min="0" max="14" value="0" aria-label="Delay in days">
+                <div class="limites-atraso"><span>0 days</span><span>+14 days</span></div>
+                <svg class="grafico-atraso" id="grafico-atraso" role="img" aria-label="Score per day of delay"></svg>
+                <p class="resultado-atraso" id="resultado-atraso" aria-live="polite">Select a site to simulate a delay.</p>
             </section>
 
             <!-- LOCAIS DE POUSO -->
             <section class="card-painel">
-                <h2>Locais de Pouso</h2>
+                <h2>Landing Sites</h2>
                 <div class="local-selecionado">
-                    <span>Local selecionado:</span>
-                    <strong id="nome-local-selecionado">Nenhum local selecionado</strong>
+                    <span>Selected site:</span>
+                    <strong id="nome-local-selecionado">No site selected</strong>
                 </div>
                 <div class="lista-locais" id="lista-locais"></div>
             </section>
@@ -222,11 +222,11 @@
     </main>
 
     <footer class="rodape">
-        Céu: Skyfield + JPL DE440 (NAIF) · Relevo: LRO LOLA (PDS Geosciences) ·
-        Textura da Lua: NASA's Scientific Visualization Studio (CGI Moon Kit) · Visual: LanderBnB
+        Sky: Skyfield + JPL DE440 (NAIF) · Terrain: LRO LOLA (PDS Geosciences) ·
+        Moon texture: NASA's Scientific Visualization Studio (CGI Moon Kit) · Design: LanderBnB
     </footer>
 
-    <!-- Ordem importa: a Lua 3D registra seus eventos antes das etapas dispararem. -->
+    <!-- Order matters: the 3D Moon registers its listeners before the steps fire events. -->
     <script type="module" src="js/lua.js"></script>
     <script type="module" src="js/locais.js"></script>
     <script type="module" src="js/etapas.js"></script>

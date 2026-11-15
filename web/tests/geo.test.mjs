@@ -54,10 +54,10 @@ test("paraUTC devolve ISO em UTC, na hora cheia", () => {
 
 test("formatação", () => {
     assert.equal(pct(0.658), "66%");
-    assert.equal(pct(0.6584, 1), "65,8%");
+    assert.equal(pct(0.6584, 1), "65.8%");
     assert.equal(pct(null), "—");
     assert.equal(duracao(5), "5 h");
-    assert.equal(duracao(161), "6,7 dias");
+    assert.equal(duracao(161), "6.7 days");
     assert.equal(classeCss("critico"), "risco");
 });
 

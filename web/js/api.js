@@ -30,7 +30,7 @@ export async function conectar() {
             return { base: c || location.origin, saude };
         } catch { /* tenta a próxima */ }
     }
-    throw new Error(`API indisponível (tentado: ${candidatos.map((c) => c || location.origin).join(", ")})`);
+    throw new Error(`API unavailable (tried: ${candidatos.map((c) => c || location.origin).join(", ")})`);
 }
 
 function q(params) {
@@ -38,7 +38,7 @@ function q(params) {
 }
 
 function exigirBase() {
-    if (base === null) throw new Error("API não conectada");
+    if (base === null) throw new Error("API not connected");
     return base;
 }
 

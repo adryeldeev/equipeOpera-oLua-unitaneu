@@ -43,7 +43,7 @@ function aviso(texto, tipo = "info") {
 
 function fmtDataLocal(iso) {
     const d = new Date(iso);
-    return `${d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })} (hora local) · ` +
+    return `${d.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })} (local time) · ` +
         `${iso.replace("T", " ").replace(":00Z", " UTC")}`;
 }
 
@@ -124,7 +124,7 @@ async function recarregarTudo() {
     }));
     if (pedido !== estado.pedido) return;
     const erros = [...estado.metricas.values()].filter((m) => m.erro);
-    aviso(erros.length ? `Alguns locais falharam: ${erros[0].erro}` : "");
+    aviso(erros.length ? `Some sites failed: ${erros[0].erro}` : "");
     await carregarAtrasos();
     atualizarPaineis();
 }
@@ -139,7 +139,7 @@ async function carregarAtrasos() {
         });
         if (pedido === estado.pedido) estado.atrasos = a;
     } catch (e) {
-        $("resultado-atraso").textContent = `Atraso indisponível: ${e.message}`;
+        $("resultado-atraso").textContent = `Delay simulation unavailable: ${e.message}`;
     }
 }
 
@@ -161,10 +161,10 @@ function atualizarPaineis() {
 
 function atualizarLocalizacao() {
     const s = local();
-    $("valor-etapa-localizacao").textContent = s ? s.name : "Nenhum local selecionado";
+    $("valor-etapa-localizacao").textContent = s ? s.name : "No site selected";
     $("coordenadas-etapa-localizacao").textContent = s
-        ? `${s.lat.toFixed(4)}°, ${s.lon.toFixed(4)}° (lon leste positiva) · ${s.mission}`
-        : "Selecione um local de pouso nos cards ou na Lua.";
+        ? `${s.lat.toFixed(4)}°, ${s.lon.toFixed(4)}° (east-positive longitude) · ${s.mission}`
+        : "Select a landing site in the cards or on the Moon.";
 }
 
 function instante0(id) {
@@ -175,8 +175,8 @@ function instante0(id) {
 }
 
 function textoAstro(nome, a) {
-    return `${nome}: azimute ${a.az.toFixed(1)}°, elevação ${a.el.toFixed(2)}° · relevo nesse azimute ` +
-        `${a.hz.toFixed(2)}° → ${a.visivel ? "VISÍVEL" : "atrás do relevo"}`;
+    return `${nome}: azimuth ${a.az.toFixed(1)}°, elevation ${a.el.toFixed(2)}° · terrain at that azimuth ` +
+        `${a.hz.toFixed(2)}° → ${a.visivel ? "VISIBLE" : "behind the terrain"}`;
 }
 
 async function atualizarSolTerra() {
@@ -185,19 +185,19 @@ async function atualizarSolTerra() {
     const s = local();
     const i0 = s && instante0(s.id);
     if (!s || !i0) {
-        caixa.textContent = s ? "Escolha a data e a hora (etapa 2)." : "Selecione um local (etapa 1).";
+        caixa.textContent = s ? "Pick the date and time (step 2)." : "Select a site (step 1).";
         svg.replaceChildren();
         return;
     }
     caixa.replaceChildren(
-        el("span", `linha-astro ${i0.sol.visivel ? "ok" : "nao"}`, textoAstro("☀ Sol", i0.sol)),
-        el("span", `linha-astro ${i0.terra.visivel ? "ok" : "nao"}`, textoAstro("🌍 Terra", i0.terra)),
+        el("span", `linha-astro ${i0.sol.visivel ? "ok" : "nao"}`, textoAstro("☀ Sun", i0.sol)),
+        el("span", `linha-astro ${i0.terra.visivel ? "ok" : "nao"}`, textoAstro("🌍 Earth", i0.terra)),
     );
     try {
         desenharCeu(svg, await horizonte(s.id), i0);
     } catch (e) {
         svg.replaceChildren();
-        caixa.appendChild(el("span", "erro-card", `Horizonte indisponível: ${e.message}`));
+        caixa.appendChild(el("span", "erro-card", `Horizon unavailable: ${e.message}`));
     }
 }
 
@@ -250,16 +250,17 @@ function atualizarEnergia() {
     const s = local();
     const m = s && estado.metricas.get(s.id);
     $("valor-etapa-energia").textContent = m && !m.erro
-        ? `${pct(m.energy.pct)} do tempo com Sol (faixa ${pct(m.incerteza.score_min)}–${pct(m.incerteza.score_max)} no score) · ` +
-          `maior noite: ${duracao(m.energy.longest_without_h)} · maior período de Sol: ${duracao(m.energy.longest_with_h)}`
-        : "Selecione um local de pouso.";
+        ? `Sun visible ${pct(m.energy.pct)} of the time · longest night: ${duracao(m.energy.longest_without_h)} · ` +
+          `longest sunlit period: ${duracao(m.energy.longest_with_h)} · site score ${pct(m.score)} ` +
+          `(range ${pct(m.incerteza.score_min)}–${pct(m.incerteza.score_max)})`
+        : "Select a landing site.";
 
     // Comparação de todos os locais (mesmos parâmetros).
     const p = parametrosEnergia();
     $("resumo-parametros-energia").textContent = p
-        ? `Painel ${p.potenciaW} W × ${p.eficienciaPct}% · consumo ${p.consumoW} W · bateria ${p.capacidadeWh} Wh ` +
-          `(início ${p.cargaInicialPct}%) · janela de ${estado.padroes.janela_h} h.`
-        : "Preencha os 5 parâmetros para simular a bateria em cada local.";
+        ? `Panels ${p.potenciaW} W × ${p.eficienciaPct}% · load ${p.consumoW} W · battery ${p.capacidadeWh} Wh ` +
+          `(start ${p.cargaInicialPct}%) · ${estado.padroes.janela_h} h window.`
+        : "Fill in the 5 parameters to simulate the battery at every site.";
     const lista = $("lista-resultados-energia");
     lista.replaceChildren(...estado.sites.map((st) => {
         const mm = estado.metricas.get(st.id);
@@ -271,19 +272,19 @@ function atualizarEnergia() {
             l.append(el("span", "", rotulo), el("strong", "", valor));
             item.appendChild(l);
         };
-        if (!mm || mm.erro) { linha("Situação", mm?.erro || "calculando…"); return item; }
-        linha("Tempo com Sol", pct(mm.energy.pct));
-        linha("Maior noite", duracao(mm.energy.longest_without_h));
+        if (!mm || mm.erro) { linha("Status", mm?.erro || "computing…"); return item; }
+        linha("Time in sunlight", pct(mm.energy.pct));
+        linha("Longest night", duracao(mm.energy.longest_without_h));
         if (p && v) {
             const r = simularBateria(v.sol.visivel, v.step_min / 60, p);
-            linha("Bateria mínima", pct(r.cargaMinimaPct / 100));
-            linha("Horas sem energia", r.sobrevive ? "0 h (sobrevive)" : `${Math.round(r.horasSemEnergia)} h`);
-            if (!r.sobrevive) linha("1ª falha após", duracao(r.primeiraFalhaH));
+            linha("Minimum battery", pct(r.cargaMinimaPct / 100));
+            linha("Hours without power", r.sobrevive ? "0 h (survives)" : `${Math.round(r.horasSemEnergia)} h`);
+            if (!r.sobrevive) linha("First outage after", duracao(r.primeiraFalhaH));
         }
         return item;
     }));
     const erroEnergia = $("estado-simulacao-energia");
-    erroEnergia.textContent = estado.metricas.size ? "" : "Aguardando a API…";
+    erroEnergia.textContent = estado.metricas.size ? "" : "Waiting for the API…";
     erroEnergia.hidden = !erroEnergia.textContent;
 
     // Elevação do Sol no instante escolhido, por local.
@@ -293,14 +294,14 @@ function atualizarEnergia() {
         const item = el("li", "resultado-elevacao-solar");
         item.appendChild(el("span", "nome-local-elevacao", st.name));
         item.appendChild(el("span", "valor-elevacao-solar", i0
-            ? `Sol a ${i0.sol.el.toFixed(2)}° · relevo ${i0.sol.hz.toFixed(2)}° no azimute ${i0.sol.az.toFixed(0)}° → ` +
-              (i0.sol.visivel ? "iluminado" : "na sombra")
+            ? `Sun at ${i0.sol.el.toFixed(2)}° · terrain ${i0.sol.hz.toFixed(2)}° at azimuth ${i0.sol.az.toFixed(0)}° → ` +
+              (i0.sol.visivel ? "sunlit" : "in shadow")
             : "—"));
         return item;
     }));
     $("estado-calculo-elevacao").textContent = estado.inicio
-        ? `Instante: ${fmtDataLocal(estado.inicio)}. Céu: Skyfield + DE440; relevo: LOLA.`
-        : "Escolha a data e a hora (etapa 2).";
+        ? `Instant: ${fmtDataLocal(estado.inicio)}. Sky: Skyfield + DE440; terrain: LOLA.`
+        : "Pick the date and time (step 2).";
 }
 
 function atualizarComunicacao() {
@@ -308,28 +309,28 @@ function atualizarComunicacao() {
     const m = s && estado.metricas.get(s.id);
     const i0 = s && instante0(s.id);
     $("valor-etapa-comunicacao").textContent = m && !m.erro
-        ? `Terra visível ${pct(m.comms.pct)} do tempo · maior período sem contato: ${duracao(m.comms.longest_without_h)} · ` +
-          `Sol e Terra juntos: ${pct(m.both.pct)}` +
-          (i0 ? ` · agora: ${i0.terra.visivel ? "Terra visível" : "Terra atrás do relevo"} (elevação ${i0.terra.el.toFixed(1)}°)` : "")
-        : "Selecione um local de pouso.";
+        ? `Earth visible ${pct(m.comms.pct)} of the time · longest blackout: ${duracao(m.comms.longest_without_h)} · ` +
+          `Sun and Earth together: ${pct(m.both.pct)}` +
+          (i0 ? ` · now: ${i0.terra.visivel ? "Earth visible" : "Earth behind the terrain"} (elevation ${i0.terra.el.toFixed(1)}°)` : "")
+        : "Select a landing site.";
 }
 
 function atualizarAtraso() {
     const dias = Number($("simulador-atraso").value);
-    $("dias-atraso").textContent = `+${dias} ${dias === 1 ? "dia" : "dias"}`;
+    $("dias-atraso").textContent = `+${dias} ${dias === 1 ? "day" : "days"}`;
     const resultado = $("resultado-atraso");
     const svg = $("grafico-atraso");
     const a = estado.atrasos;
     if (!a) {
-        resultado.textContent = estado.selecionado ? "Calculando…" : "Selecione um local para simular o atraso.";
+        resultado.textContent = estado.selecionado ? "Computing…" : "Select a site to simulate a delay.";
         svg.replaceChildren();
         return;
     }
     const p = a.serie[dias];
     const base = a.serie[0];
     const dif = (p.score - base.score) * 100;
-    resultado.textContent = `Com +${dias} ${dias === 1 ? "dia" : "dias"}: score ${pct(p.score)} (${rotuloClasse(p.class)})` +
-        (dias ? ` · ${dif >= 0 ? "+" : ""}${dif.toFixed(1).replace(".", ",")} p.p. em relação ao pouso no prazo` : "");
+    resultado.textContent = `With +${dias} ${dias === 1 ? "day" : "days"}: score ${pct(p.score)} (${rotuloClasse(p.class)})` +
+        (dias ? ` · ${dif >= 0 ? "+" : ""}${dif.toFixed(1)} pts vs. landing on schedule` : "");
     resultado.dataset.classe = p.class;
 
     const NS = "http://www.w3.org/2000/svg";
@@ -368,8 +369,8 @@ function atualizarLuz() {
     document.dispatchEvent(new CustomEvent("direcao-sol", {
         detail: i0
             ? { direcao: direcaoDoCeu(s.lat, s.lon, i0.sol.az, i0.sol.el),
-                texto: `Luz na direção real do Sol em ${fmtDataLocal(estado.inicio)} (Skyfield/DE440).` }
-            : { direcao: null, texto: "Escolha local, data e hora: a luz segue a direção real do Sol." },
+                texto: `Light from the real Sun direction at ${fmtDataLocal(estado.inicio)} (Skyfield/DE440).` }
+            : { direcao: null, texto: "Pick a site, date and time: the light follows the real Sun direction." },
     }));
 }
 
@@ -398,13 +399,13 @@ async function iniciar() {
             $("data-missao").min = saude.intervalo_suportado.inicio.slice(0, 10);
             $("data-missao").max = saude.intervalo_suportado.fim.slice(0, 10);
         }
-        aviso(saude.efemerides ? "" : `API em plano B (só 2027): ${saude.erro_efemerides}`, "alerta");
+        aviso(saude.efemerides ? "" : `API in fallback mode (year 2027 only): ${saude.erro_efemerides}`, "alerta");
         estado.sites = await api.sites();
         console.info(`API conectada em ${base}`);
     } catch (e) {
         estado.sites = await sitesSemApi();
-        aviso(`${e.message}. Rode na raiz do projeto: uvicorn api.main:app --port 8001 ` +
-              "e abra http://localhost:8001/ . Sem a API, só a lista de locais aparece.", "erro");
+        aviso(`${e.message}. From the project root run: uvicorn api.main:app --port 8001 ` +
+              "and open http://localhost:8001/ . Without the API only the site list is shown.", "erro");
     }
     desenharCards(estado.sites, estado.metricas, estado.selecionado);
     document.dispatchEvent(new CustomEvent("locais-carregados", { detail: { sites: estado.sites } }));

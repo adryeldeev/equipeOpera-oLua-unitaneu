@@ -143,7 +143,7 @@ def test_horizonte_interpolado_com_wrap():
 def test_horizonte_com_passo_diferente_de_1():
     h = {"site": "teste", "az_step_deg": 2, "horizon_deg": list(np.arange(180.0))}
     assert m.horizonte_em(h, [3.0, 359.0]).tolist() == [1.5, 89.5]
-    with pytest.raises(ValueError, match="não cobrem 360"):
+    with pytest.raises(ValueError, match="do not cover 360"):
         m.horizonte_em({"az_step_deg": 1, "horizon_deg": [0.0] * 359}, [0.0])
 
 
@@ -161,8 +161,8 @@ def test_limiares_invalidos(ok, crit):
         m.calcular_metricas(ceu_sint(np.ones(24)), horiz(), 0, 24, ok, crit)
 
 
-def test_crit_maior_que_ok_mensagem_em_portugues():
-    with pytest.raises(ValueError, match="deve ser menor que o limiar ok"):
+def test_crit_maior_que_ok_mensagem_clara():
+    with pytest.raises(ValueError, match="must be lower than the ok threshold"):
         m.classificar(0.3, ok=0.2, crit=0.5)
 
 
@@ -209,7 +209,7 @@ def test_serie_por_atraso_bate_com_calcular_metricas(reais, site):
 def test_serie_por_atraso_fora_do_alcance(reais):
     ceu, hz = reais["malapert"]
     ultimo = len(ceu["sun"]["el"]) - 720
-    with pytest.raises(ValueError, match="fora do alcance"):
+    with pytest.raises(ValueError, match="out of the sky range"):
         m.serie_por_atraso(ceu, hz, ultimo, 720, range(15), 0.5, 0.2)
 
 
@@ -232,21 +232,21 @@ def test_janela_invalida(inicio, horas):
 
 
 def test_mensagem_janela_fora_do_alcance():
-    with pytest.raises(ValueError, match=r"cobre 2027-01-01T00:00:00Z a 2027-01-02T00:00:00Z"):
+    with pytest.raises(ValueError, match=r"covers 2027-01-01T00:00:00Z to 2027-01-02T00:00:00Z"):
         m.calcular_metricas(ceu_sint(np.ones(24)), horiz(), 10, 24)
 
 
 def test_locais_diferentes():
-    with pytest.raises(ValueError, match="locais diferentes"):
+    with pytest.raises(ValueError, match="different sites"):
         m.visibilidade(ceu_sint([1.0]), horiz(site="outro"))
 
 
 def test_indice_de():
     ceu = ceu_sint(np.ones(48))
     assert m.indice_de(ceu, datetime(2027, 1, 2, 3, tzinfo=UTC)) == 27
-    with pytest.raises(ValueError, match="grade"):
+    with pytest.raises(ValueError, match="grid"):
         m.indice_de(ceu, datetime(2027, 1, 1, 0, 30, tzinfo=UTC))
-    with pytest.raises(ValueError, match="fora do alcance"):
+    with pytest.raises(ValueError, match="out of the sky range"):
         m.indice_de(ceu, datetime(2027, 1, 3, tzinfo=UTC))
 
 

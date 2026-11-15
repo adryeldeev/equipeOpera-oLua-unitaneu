@@ -74,7 +74,7 @@ def horizonte_em(horizonte: dict, az) -> np.ndarray:
     n = h.size
     if n == 0 or passo <= 0 or not math.isclose(n * passo, 360.0):
         raise ValueError(
-            f"horizonte inválido: {n} valores com passo de {passo}° não cobrem 360°")
+            f"invalid horizon: {n} values with a {passo}° step do not cover 360°")
     x = np.mod(np.asarray(az, dtype=float), 360.0) / passo
     base = np.floor(x)
     f = x - base
@@ -151,40 +151,40 @@ def classificar(score: float, ok: float, crit: float) -> str:
 def _conferir_limiares(ok, crit):
     for nome, v in (("ok", ok), ("crit", crit)):
         if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v):
-            raise ValueError(f"limiar {nome} deve ser um número (recebido: {v!r})")
+            raise ValueError(f"threshold {nome} must be a number (got: {v!r})")
         if not 0.0 <= v <= 1.0:
             raise ValueError(
-                f"limiar {nome} deve ser uma fração entre 0 e 1 (recebido: {v}); "
-                "converta de porcentagem antes de chamar")
+                f"threshold {nome} must be a fraction between 0 and 1 (got: {v}); "
+                "convert from percent before calling")
     if not crit < ok:
-        raise ValueError(f"o limiar crítico ({crit}) deve ser menor que o limiar ok ({ok})")
+        raise ValueError(f"the critical threshold ({crit}) must be lower than the ok threshold ({ok})")
 
 
 def _conferir_par(ceu, horizonte):
     if ceu.get("site") != horizonte.get("site"):
         raise ValueError(
-            f"céu e horizonte de locais diferentes: {ceu.get('site')!r} e {horizonte.get('site')!r}")
+            f"sky and horizon are from different sites: {ceu.get('site')!r} and {horizonte.get('site')!r}")
 
 
 def _passos(ceu: dict, horas: float, nome: str) -> int:
     """Converte horas em nº de passos inteiro (erro se não cair na grade)."""
     if isinstance(horas, bool) or not isinstance(horas, (int, float)) or not math.isfinite(horas):
-        raise ValueError(f"{nome} deve ser um número (recebido: {horas!r})")
+        raise ValueError(f"{nome} must be a number (got: {horas!r})")
     passo = ceu["step_min"]
     n = horas * 60 / passo
     if not math.isclose(n, round(n), abs_tol=1e-9):
-        raise ValueError(f"{nome} = {horas} h não é múltiplo do passo do céu ({passo} min)")
+        raise ValueError(f"{nome} = {horas} h is not a multiple of the sky time step ({passo} min)")
     return int(round(n))
 
 
 def _janela(ceu: dict, inicio_idx, janela_h) -> tuple[int, int, int]:
     """(início, nº de passos, total de instantes), validando o alcance."""
     if isinstance(inicio_idx, bool) or not isinstance(inicio_idx, (int, np.integer)):
-        raise ValueError(f"inicio_idx deve ser inteiro (recebido: {inicio_idx!r})")
+        raise ValueError(f"inicio_idx must be an integer (got: {inicio_idx!r})")
     inicio_idx = int(inicio_idx)
     n = _passos(ceu, janela_h, "janela_h")
     if n <= 0:
-        raise ValueError(f"janela_h deve ser > 0 (recebido: {janela_h})")
+        raise ValueError(f"janela_h must be > 0 (got: {janela_h})")
     total = len(ceu["sun"]["el"])
     if inicio_idx < 0 or inicio_idx + n > total:
         ini = _instante(ceu["start"])
@@ -192,9 +192,9 @@ def _janela(ceu: dict, inicio_idx, janela_h) -> tuple[int, int, int]:
         fim_ceu = ini + passo * total
         pedido_ini = ini + passo * inicio_idx
         raise ValueError(
-            f"janela fora do alcance do céu: pedido {_iso(pedido_ini)} + {janela_h} h, "
-            f"mas o céu de {ceu['site']} cobre {_iso(ini)} a {_iso(fim_ceu)} "
-            f"({total} instantes de {ceu['step_min']} min)")
+            f"window out of the sky range: requested {_iso(pedido_ini)} + {janela_h} h, "
+            f"but the sky for {ceu['site']} covers {_iso(ini)} to {_iso(fim_ceu)} "
+            f"({total} samples of {ceu['step_min']} min)")
     return inicio_idx, n, total
 
 
@@ -204,14 +204,14 @@ def indice_de(ceu: dict, instante: datetime) -> int:
     Erro se o instante não cair exatamente na grade ou estiver fora dela.
     """
     if not isinstance(instante, datetime) or instante.tzinfo is None:
-        raise ValueError("instante deve ser um datetime com fuso (tzinfo=timezone.utc)")
+        raise ValueError("instante must be a timezone-aware datetime (tzinfo=timezone.utc)")
     delta = instante.astimezone(timezone.utc) - _instante(ceu["start"])
     passos = delta.total_seconds() / (ceu["step_min"] * 60)
     if not math.isclose(passos, round(passos), abs_tol=1e-9):
-        raise ValueError(f"{_iso(instante)} não cai na grade de {ceu['step_min']} min do céu")
+        raise ValueError(f"{_iso(instante)} is not on the {ceu['step_min']}-min grid of the sky")
     i = int(round(passos))
     if not 0 <= i < len(ceu["sun"]["el"]):
-        raise ValueError(f"{_iso(instante)} está fora do alcance do céu de {ceu['site']}")
+        raise ValueError(f"{_iso(instante)} is out of the sky range for {ceu['site']}")
     return i
 
 
@@ -259,7 +259,7 @@ def calcular_metricas(ceu: dict, horizonte: dict, inicio_idx: int, janela_h: flo
     _conferir_limiares(ok, crit)
     i0, n, _ = _janela(ceu, inicio_idx, janela_h)
     if incerteza_graus < 0:
-        raise ValueError(f"incerteza_graus deve ser >= 0 (recebido: {incerteza_graus})")
+        raise ValueError(f"incerteza_graus must be >= 0 (got: {incerteza_graus})")
 
     sol, terra = _folgas(ceu, horizonte)
     janela = slice(i0, i0 + n)
@@ -322,7 +322,7 @@ def serie_por_atraso(ceu: dict, horizonte: dict, inicio_idx: int, janela_h: floa
 
     deslocamentos = []
     for a in atrasos:
-        d = _passos(ceu, a * 24, f"atraso de {a} dias")
+        d = _passos(ceu, a * 24, f"delay of {a} days")
         if i0 + d < 0 or i0 + d + n > total:
             _janela(ceu, i0 + d, janela_h)  # levanta o ValueError com a explicação
         deslocamentos.append(d)

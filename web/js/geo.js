@@ -60,17 +60,17 @@ export function paraUTC(data, hora) {
     return d.toISOString().replace(".000Z", "Z");
 }
 
-/** Fração (0–1) -> "66%" (ou "66,4%" com casas). */
+/** Fraction (0–1) -> "66%" (or "66.4%" with decimals). */
 export function pct(fracao, casas = 0) {
     if (fracao === null || fracao === undefined || Number.isNaN(fracao)) return "—";
-    return `${(fracao * 100).toFixed(casas).replace(".", ",")}%`;
+    return `${(fracao * 100).toFixed(casas)}%`;
 }
 
-/** Horas -> "5 h" ou "6,7 dias". */
+/** Hours -> "5 h" or "6.7 days". */
 export function duracao(horas) {
     if (horas === null || horas === undefined) return "—";
     if (horas < 48) return `${Math.round(horas)} h`;
-    return `${(horas / 24).toFixed(1).replace(".", ",")} dias`;
+    return `${(horas / 24).toFixed(1)} days`;
 }
 
 /**
@@ -119,5 +119,5 @@ export function classeCss(classe) {
 }
 
 export function rotuloClasse(classe) {
-    return { ideal: "Ideal", moderado: "Moderado", critico: "Risco crítico" }[classe] || "—";
+    return { ideal: "Ideal", moderado: "Moderate", critico: "Critical" }[classe] || "—";
 }

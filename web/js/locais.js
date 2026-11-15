@@ -7,7 +7,7 @@ const lista = document.getElementById("lista-locais");
 const nomeSelecionado = document.getElementById("nome-local-selecionado");
 
 function formatarCoord(lat, lon) {
-    return `${Math.abs(lat).toFixed(2)}° ${lat < 0 ? "S" : "N"} · ${Math.abs(lon).toFixed(2)}° ${lon < 0 ? "O" : "L"}`;
+    return `${Math.abs(lat).toFixed(2)}° ${lat < 0 ? "S" : "N"} · ${Math.abs(lon).toFixed(2)}° ${lon < 0 ? "W" : "E"}`;
 }
 
 function el(tag, classe, texto) {
@@ -47,21 +47,21 @@ export function desenharCards(sites, metricas, selecionado) {
 
         const cab = el("span", "cabecalho-local");
         const nome = el("strong", "", s.name);
-        const status = el("span", "status-local", m?.erro ? "Indisponível" : classe ? rotuloClasse(classe) : "Calculando…");
+        const status = el("span", "status-local", m?.erro ? "Unavailable" : classe ? rotuloClasse(classe) : "Computing…");
         cab.append(nome, status);
         card.appendChild(cab);
 
         const coord = el("span", "coordenadas-local", formatarCoord(s.lat, s.lon));
         card.appendChild(coord);
-        if (s.mock || m?.mock) card.appendChild(el("span", "tag-mock", "dados mock (horizonte falso)"));
+        if (s.mock || m?.mock) card.appendChild(el("span", "tag-mock", "mock data (synthetic horizon)"));
 
         if (m && !m.erro) {
             card.append(
-                indicador("Energia solar", m.energy.pct, `energia-${classeCss(classe)}`),
-                indicador("Comunicação", m.comms.pct, "comunicacao"),
+                indicador("Solar power", m.energy.pct, `energia-${classeCss(classe)}`),
+                indicador("Earth link", m.comms.pct, "comunicacao"),
             );
             const faixa = el("span", "faixa-incerteza",
-                `Score ${pct(m.score)} · faixa ${pct(m.incerteza.score_min)}–${pct(m.incerteza.score_max)} (relevo ±${m.incerteza.margem_graus}°)`);
+                `Score ${pct(m.score)} · range ${pct(m.incerteza.score_min)}–${pct(m.incerteza.score_max)} (terrain ±${m.incerteza.margem_graus}°)`);
             card.appendChild(faixa);
         } else if (m?.erro) {
             card.appendChild(el("span", "erro-card", m.erro));
@@ -72,5 +72,5 @@ export function desenharCards(sites, metricas, selecionado) {
         return card;
     }));
     const atual = sites.find((s) => s.id === selecionado);
-    nomeSelecionado.textContent = atual ? atual.name : "Nenhum local selecionado";
+    nomeSelecionado.textContent = atual ? atual.name : "No site selected";
 }

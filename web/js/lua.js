@@ -32,17 +32,17 @@ const raycaster = new THREE.Raycaster();
 
 const camadaMarcadores = document.createElement("div");
 camadaMarcadores.className = "camada-marcadores";
-camadaMarcadores.setAttribute("aria-label", "Locais de pouso");
+camadaMarcadores.setAttribute("aria-label", "Landing sites");
 container.appendChild(camadaMarcadores);
 
 const avisoOrientacao = document.createElement("div");
 avisoOrientacao.className = "aviso-orientacao";
-avisoOrientacao.textContent = "Posições reais (MOON_ME) · relevo do polo: LOLA · textura: NASA SVS";
+avisoOrientacao.textContent = "True positions (MOON_ME) · polar terrain: LOLA · texture: NASA SVS";
 camadaMarcadores.appendChild(avisoOrientacao);
 
 const painelLocal = document.createElement("section");
 painelLocal.className = "painel-local-visualizador";
-painelLocal.setAttribute("aria-label", "Informações do local selecionado");
+painelLocal.setAttribute("aria-label", "Selected site details");
 painelLocal.setAttribute("aria-live", "polite");
 painelLocal.hidden = true;
 
@@ -53,7 +53,7 @@ nomePainel.className = "nome-painel-local";
 const fecharPainel = document.createElement("button");
 fecharPainel.type = "button";
 fecharPainel.className = "fechar-painel-local";
-fecharPainel.setAttribute("aria-label", "Fechar informações do local");
+fecharPainel.setAttribute("aria-label", "Close site details");
 fecharPainel.textContent = "×";
 fecharPainel.addEventListener("click", () => { painelLocal.hidden = true; });
 cabecalhoPainel.append(nomePainel, fecharPainel);
@@ -72,12 +72,12 @@ function linhaPainel(rotulo) {
     return valor;
 }
 
-const coordenadasPainel = linhaPainel("Coordenadas lunares");
-const energiaPainel = linhaPainel("Energia solar");
-const comunicacaoPainel = linhaPainel("Comunicação");
+const coordenadasPainel = linhaPainel("Lunar coordinates");
+const energiaPainel = linhaPainel("Solar power");
+const comunicacaoPainel = linhaPainel("Earth link");
 const notaPainel = document.createElement("p");
 notaPainel.className = "aviso-indicadores-simulados";
-notaPainel.textContent = "% do tempo na janela escolhida · céu: Skyfield/DE440 · relevo: LOLA";
+notaPainel.textContent = "% of time in the selected window · sky: Skyfield/DE440 · terrain: LOLA";
 painelLocal.appendChild(notaPainel);
 container.appendChild(painelLocal);
 
@@ -89,18 +89,18 @@ container.appendChild(destinoTexto);
 const estadoCarregamento = document.createElement("div");
 estadoCarregamento.className = "estado-carregamento-lua";
 estadoCarregamento.setAttribute("role", "status");
-estadoCarregamento.textContent = "Lua 3D carregando...";
+estadoCarregamento.textContent = "Loading 3D Moon...";
 container.appendChild(estadoCarregamento);
 
 const estadoIluminacao = document.createElement("div");
 estadoIluminacao.className = "estado-iluminacao-solar";
 estadoIluminacao.setAttribute("role", "status");
 estadoIluminacao.setAttribute("aria-live", "polite");
-estadoIluminacao.textContent = "Escolha local, data e hora: a luz segue a direção real do Sol.";
+estadoIluminacao.textContent = "Pick a site, date and time: the light follows the real Sun direction.";
 container.appendChild(estadoIluminacao);
 
 function formatarCoord(lat, lon) {
-    return `${Math.abs(lat).toFixed(2)}° ${lat < 0 ? "S" : "N"} · ${Math.abs(lon).toFixed(2)}° ${lon < 0 ? "O" : "L"}`;
+    return `${Math.abs(lat).toFixed(2)}° ${lat < 0 ? "S" : "N"} · ${Math.abs(lon).toFixed(2)}° ${lon < 0 ? "W" : "E"}`;
 }
 
 function atualizarPainel() {
@@ -205,7 +205,7 @@ function criarMarcadores() {
         const botao = document.createElement("button");
         botao.type = "button";
         botao.className = "marcador-local";
-        botao.setAttribute("aria-label", `Selecionar ${local.name}`);
+        botao.setAttribute("aria-label", `Select ${local.name}`);
         botao.setAttribute("aria-pressed", String(local.id === selecionado));
         botao.classList.toggle("selecionado", local.id === selecionado);
         const ponto = document.createElement("span");
@@ -331,7 +331,7 @@ document.addEventListener("locais-carregados", (e) => {
 document.addEventListener("destino-lunar-selecionado", (e) => {
     selecionado = e.detail.id;
     const local = locais.get(selecionado);
-    destinoTexto.textContent = local ? `Destino: ${local.name}` : "";
+    destinoTexto.textContent = local ? `Destination: ${local.name}` : "";
     marcadores.forEach((m, id) => {
         m.element.classList.toggle("selecionado", id === selecionado);
         m.element.setAttribute("aria-pressed", String(id === selecionado));
@@ -379,7 +379,7 @@ montarLua()
     .then(() => { estadoCarregamento.remove(); animar(); })
     .catch((erro) => {
         console.error("Erro ao carregar a Lua:", erro);
-        estadoCarregamento.textContent = "Não foi possível carregar as texturas da Lua (web/assets/).";
+        estadoCarregamento.textContent = "Could not load the Moon textures (web/assets/).";
         estadoCarregamento.classList.add("erro");
         animar();
     });

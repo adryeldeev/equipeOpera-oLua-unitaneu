@@ -63,7 +63,7 @@ def test_sites_igual_ao_contrato(cliente):
 def test_local_inexistente_404(cliente):
     r = cliente.get("/api/sites/xyz/metricas", params={"inicio": INICIO})
     assert r.status_code == 404
-    assert "não existe" in r.json()["detail"]
+    assert "does not exist" in r.json()["detail"]
 
 
 def test_horizonte(cliente):
@@ -111,11 +111,11 @@ def test_limiares_em_porcentagem(cliente, com_kernels):
 
 
 @pytest.mark.parametrize("params, trecho", [
-    ({"inicio": "1700-01-01"}, "fora do intervalo suportado"),
-    ({"inicio": INICIO, "ok": 0.2, "crit": 0.5}, "deve ser menor"),
-    ({"inicio": INICIO, "janela_h": 1.5}, "múltiplo do passo"),
+    ({"inicio": "1700-01-01"}, "out of the supported range"),
+    ({"inicio": INICIO, "ok": 0.2, "crit": 0.5}, "must be lower"),
+    ({"inicio": INICIO, "janela_h": 1.5}, "not a multiple of the sky time step"),
 ])
-def test_erros_422_em_portugues(cliente, com_kernels, params, trecho):
+def test_erros_422_com_mensagem_clara(cliente, com_kernels, params, trecho):
     r = cliente.get("/api/sites/malapert/metricas", params=params)
     assert r.status_code == 422
     assert trecho in r.json()["detail"]
@@ -172,9 +172,9 @@ def test_plano_b_funciona_sem_kernels(cliente, plano_b):
 
 
 @pytest.mark.parametrize("params, trecho", [
-    ({"inicio": "2030-01-01"}, "fora do alcance"),
-    ({"inicio": "2027-03-01T00:30:00Z"}, "grade"),
-    ({"inicio": INICIO, "passo_min": 30}, "só há passo de 60"),
+    ({"inicio": "2030-01-01"}, "out of the sky range"),
+    ({"inicio": "2027-03-01T00:30:00Z"}, "grid"),
+    ({"inicio": INICIO, "passo_min": 30}, "only a 60-min step"),
 ])
 def test_plano_b_limites(cliente, plano_b, params, trecho):
     r = cliente.get("/api/sites/malapert/metricas", params=params)

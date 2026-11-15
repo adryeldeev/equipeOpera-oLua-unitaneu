@@ -72,9 +72,10 @@ async def _ciclo(app: FastAPI):
 
 
 app = FastAPI(
-    title="Pouso no Polo Sul Lunar",
+    title="LanderBnB: Lunar South Pole Landing Planner",
     version=VERSAO,
-    description="Sol (energia) e Terra (comunicação) acima do relevo, por local e data de pouso.",
+    description=("Sun (power) and Earth (direct-to-Earth communication) above the real terrain, "
+                 "per landing site and landing date. Sky: Skyfield + JPL DE440; terrain: LRO LOLA."),
     lifespan=_ciclo,
 )
 app.add_middleware(
@@ -98,8 +99,8 @@ def _ler(caminho: Path):
     try:
         return _ler_cache(str(caminho), caminho.stat().st_mtime_ns)
     except FileNotFoundError:
-        raise HTTPException(503, f"arquivo de dados ausente: {caminho.name} "
-                                 "(rode python -m pipeline.export --out data)")
+        raise HTTPException(503, f"missing data file: {caminho.name} "
+                                 "(run python -m pipeline.export --out data)")
 
 
 def _sites() -> dict[str, dict]:
@@ -109,7 +110,7 @@ def _sites() -> dict[str, dict]:
 def _site(site_id: str) -> dict:
     sites = _sites()
     if site_id not in sites:
-        raise HTTPException(404, f"local '{site_id}' não existe; disponíveis: {', '.join(sites)}")
+        raise HTTPException(404, f"site '{site_id}' does not exist; available: {', '.join(sites)}")
     return sites[site_id]
 
 
@@ -130,18 +131,20 @@ def _ceu(site: dict, inicio: datetime, horas: float, passo_min: int) -> tuple[di
         try:
             return ef.gerar_ceu(site, inicio, horas / 24, passo_min), 0, "skyfield"
         except ef.ForaDoIntervalo as e:
-            raise HTTPException(422, f"{e}") from e
+            raise HTTPException(
+                422, f"date out of the supported range "
+                     f"({e.inicio_suportado:%Y-%m-%d} to {e.fim_suportado:%Y-%m-%d} UTC)") from e
         except ef.ParametroInvalido as e:
-            raise HTTPException(422, f"{e}") from e
+            raise HTTPException(422, f"invalid ephemeris parameter: {e}") from e
 
     ceu = _ler(_dados_dir() / "sky" / f"{site['id']}.json")
-    fonte = f"data/sky (plano B: {estado['erro_efemerides']})"
+    fonte = f"data/sky (fallback: {estado['erro_efemerides']})"
     if passo_min != ceu["step_min"]:
-        raise HTTPException(422, f"no plano B (data/sky) só há passo de {ceu['step_min']} min")
+        raise HTTPException(422, f"in fallback mode (data/sky) only a {ceu['step_min']}-min step is available")
     try:
         i0 = mt.indice_de(ceu, inicio)
     except ValueError as e:
-        raise HTTPException(422, f"plano B (data/sky): {e}") from e
+        raise HTTPException(422, f"fallback mode (data/sky, year 2027 only): {e}") from e
     return ceu, i0, fonte
 
 
@@ -158,12 +161,12 @@ def _fonte(fonte_ceu: str, hz: dict) -> dict:
 
 # ---------------------------------------------------------------- endpoints
 
-Inicio = Query(..., description="início da janela (pouso) em ISO 8601; sem fuso = UTC",
+Inicio = Query(..., description="window start (landing time), ISO 8601; no timezone = UTC",
                examples=["2027-03-01T00:00:00Z"])
-Passo = Query(60, ge=1, le=1440, description="passo do céu em minutos")
-Janela = Query(mt.JANELA_H_PADRAO, gt=0, le=JANELA_MAX_H, description="duração da janela em horas")
-Ok = Query(mt.OK_PADRAO, ge=0, le=100, description="limiar ideal (fração 0–1 ou %)")
-Crit = Query(mt.CRIT_PADRAO, ge=0, le=100, description="limiar crítico (fração 0–1 ou %)")
+Passo = Query(60, ge=1, le=1440, description="sky time step in minutes")
+Janela = Query(mt.JANELA_H_PADRAO, gt=0, le=JANELA_MAX_H, description="window length in hours")
+Ok = Query(mt.OK_PADRAO, ge=0, le=100, description="ideal threshold (fraction 0–1 or %)")
+Crit = Query(mt.CRIT_PADRAO, ge=0, le=100, description="critical threshold (fraction 0–1 or %)")
 
 
 @app.get("/api/saude")
@@ -208,7 +211,7 @@ def _recorte(ceu, i0, dias, passo_min, inicio, fonte):
         return ceu
     n = -(-int(round(dias * 1440)) // passo_min)
     if i0 + n > len(ceu["sun"]["el"]):
-        raise HTTPException(422, "plano B (data/sky): período fora do arquivo")
+        raise HTTPException(422, "fallback mode (data/sky, year 2027 only): period out of the file")
     corte = slice(i0, i0 + n)
     return {**ceu, "start": _utc(inicio).strftime("%Y-%m-%dT%H:%M:%SZ"),
             **{c: {k: v[corte] for k, v in ceu[c].items()} for c in ("sun", "earth")}}
@@ -218,10 +221,10 @@ def _recorte(ceu, i0, dias, passo_min, inicio, fonte):
 def obter_visibilidade(site_id: str, inicio: datetime = Inicio,
                        dias: float = Query(30, gt=0, le=60), passo_min: int = Passo,
                        margem_graus: float = Query(0.0, ge=-5, le=5)):
-    """Linha do tempo instante a instante: posição, horizonte naquele azimute e se é visível.
+    """Per-sample timeline: position, terrain horizon at that azimuth and whether it is visible.
 
-    Serve para o front desenhar o céu e simular bateria sem reimplementar a
-    regra de visibilidade (ela fica só no pipeline).
+    Lets the front end draw the sky and simulate the battery without
+    re-implementing the visibility rule (it lives only in the pipeline).
     """
     site = _site(site_id)
     hz = _horizonte(site_id)
@@ -230,7 +233,7 @@ def obter_visibilidade(site_id: str, inicio: datetime = Inicio,
     v = mt.visibilidade(ceu, hz, margem_graus)
     saida = {"site": site_id, "start": ceu["start"], "step_min": ceu["step_min"],
              "mock": bool(ceu.get("mock")) or bool(hz.get("mock")), "fonte": _fonte(fonte, hz),
-             "regra": "visível se el + rad_deg > horizonte(az) + margem_graus"}
+             "regra": "visible if el + rad_deg > horizon(az) + margem_graus"}
     for corpo, nome, chave in (("sun", "sol", "sol_visivel"), ("earth", "terra", "terra_visivel")):
         c = ceu[corpo]
         saida[nome] = {
