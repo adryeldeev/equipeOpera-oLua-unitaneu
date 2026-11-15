@@ -41,6 +41,12 @@ DRACONIC_YEAR = 346.6  # ciclo da declinação do Sol vista da Lua
 LIB_LAT = 27.21      # libração em latitude (aprox. mês draconítico)
 LIB_LON = 27.55      # libração em longitude (aprox. mês anomalístico)
 
+# Raio angular aparente (graus) constante, a partir de distâncias MÉDIAS:
+# Sol: asin(696000 km / 1 UA); Terra: asin(6378 km / 384400 km).
+# No dado real (ephemeris.py) ele varia instante a instante.
+SUN_RAD_DEG = round(math.degrees(math.asin(696_000 / 149_597_870.7)), 5)
+EARTH_RAD_DEG = round(math.degrees(math.asin(6_378 / 384_400)), 5)
+
 
 def az_el(site_lat, site_lon, sub_lat, sub_lon):
     """Azimute/elevação de um corpo muito distante, dado o ponto sub-corpo.
@@ -84,8 +90,8 @@ def mock_sky(site, rng):
     """Séries falsas de Sol e Terra, passo de STEP_MIN, por DAYS dias."""
     n = DAYS * 24 * 60 // STEP_MIN
     sun_phase = rng.uniform(0, 360)
-    sun = {"az": [], "el": []}
-    earth = {"az": [], "el": []}
+    sun = {"az": [], "el": [], "rad_deg": [SUN_RAD_DEG] * n}
+    earth = {"az": [], "el": [], "rad_deg": [EARTH_RAD_DEG] * n}
     for i in range(n):
         t = i * STEP_MIN / (60 * 24)  # dias desde START
         # Sol: o ponto subsolar dá uma volta para OESTE a cada dia solar
@@ -106,6 +112,7 @@ def mock_sky(site, rng):
     return {
         "mock": True,
         "site": site["id"],
+        "frame": "MOON_ME",
         "start": START.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "step_min": STEP_MIN,
         "sun": sun,
