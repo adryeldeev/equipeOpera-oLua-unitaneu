@@ -6,7 +6,7 @@
     "lon": 0.0,
     "category": "polo_sul",
     "mission": "Artemis (região candidata)",
-    "mock": true
+    "mock": false
   },
   {
     "id": "malapert",
@@ -15,7 +15,7 @@
     "lon": 0.0,
     "category": "polo_sul",
     "mission": "Artemis III (região candidata)",
-    "mock": true
+    "mock": false
   },
   {
     "id": "nobile",
@@ -24,7 +24,7 @@
     "lon": 53.54,
     "category": "polo_sul",
     "mission": "VIPER (alvo original)",
-    "mock": true
+    "mock": false
   },
   {
     "id": "haworth",
@@ -33,7 +33,7 @@
     "lon": -4.14,
     "category": "polo_sul",
     "mission": "Artemis III (região candidata)",
-    "mock": true
+    "mock": false
   },
   {
     "id": "apollo11",
@@ -42,6 +42,6 @@
     "lon": 23.473,
     "category": "referencia",
     "mission": "Apollo 11 (1969), referência fora do polo",
-    "mock": true
+    "mock": false
   }
 ]
