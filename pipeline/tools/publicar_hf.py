@@ -1,7 +1,6 @@
 """Publica o site num Hugging Face Space ESTÁTICO (gratuito).
 
-    # PowerShell
-    $env:HF_TOKEN = "hf_..."            # token com permissão "Write"
+    # Cole o token (tipo "Write") no arquivo .env da raiz:  HF_TOKEN=hf_...
     python pipeline/tools/publicar_hf.py --space adryelmartinss/landerbnb
 
     # Só montar o pacote numa pasta, sem enviar (para conferir):
@@ -14,15 +13,15 @@ O que vai para o Space (montado a partir do commit atual, git archive HEAD):
 O index.html sai com <meta name="api-base" content="static">: o site usa o
 MODO ESTÁTICO (contas no navegador com web/js/calculo.js, iguais ao Python).
 
-Imagens vão no Git LFS (o Hugging Face recusa binários fora do LFS). O
-conteúdo anterior do Space é substituído (push --force). O token NÃO é
-gravado em disco nem impresso.
+O envio usa a biblioteca oficial huggingface_hub (upload_folder), que cuida
+das imagens (LFS/Xet) sozinha. Arquivos antigos do Space que não estão no
+pacote são apagados. O token vem do .env (ou da variável HF_TOKEN) e nunca é
+impresso: erros são mostrados sem nenhum trecho de credencial.
 """
 
 from __future__ import annotations
 
 import argparse
-import base64
 import io
 import os
 import shutil
@@ -33,7 +32,6 @@ import tempfile
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[2]
-BINARIOS = ("*.jpg", "*.jpeg", "*.png", "*.gif", "*.webp", "*.ico")
 META_API = '<meta name="api-base" content="">'
 
 README_SPACE = """---
@@ -138,25 +136,26 @@ def main(argv=None) -> int:
     if not token:
         p.error("token não encontrado: cole o token do Hugging Face no arquivo .env "
                 "(linha HF_TOKEN=hf_...) ou defina a variável de ambiente HF_TOKEN")
-    usuario = a.space.split("/")[0]
+    try:
+        from huggingface_hub import HfApi
+    except ImportError:
+        p.error("instale a biblioteca: pip install huggingface_hub")
 
     with tempfile.TemporaryDirectory(prefix="hf-space-") as tmp:
         destino = Path(tmp)
         commit = montar(a.ref, destino)
-        rodar(["git", "init", "-q", "-b", "main"], destino)
-        rodar(["git", "lfs", "install", "--local"], destino)
-        rodar(["git", "lfs", "track", *BINARIOS], destino)
-        rodar(["git", "add", "-A"], destino)
-        rodar(["git", "-c", "user.name=publicar_hf", "-c", "user.email=publicar_hf@localhost",
-               "commit", "-q", "-m", f"Site estático do commit {commit}"], destino)
-        n_lfs = len(rodar(["git", "lfs", "ls-files"], destino).splitlines())
-        print(f"commit {commit}: site montado ({n_lfs} imagens no LFS)")
-
-        cabecalho = "Authorization: Basic " + base64.b64encode(f"{usuario}:{token}".encode()).decode()
+        print(f"commit {commit}: site montado")
         url = f"https://huggingface.co/spaces/{a.space}"
         print(f"enviando para {url} ...")
-        rodar(["git", "-c", f"http.extraheader={cabecalho}", "push", "--force", url, "main"],
-              destino, ocultar=token)
+        try:
+            HfApi(token=token).upload_folder(
+                repo_id=a.space, repo_type="space", folder_path=str(destino),
+                commit_message=f"Site estático do commit {commit}",
+                delete_patterns=["*", "**/*"],  # remove o que não está no pacote novo
+            )
+        except Exception as e:  # nunca mostra a credencial
+            msg = str(e).replace(token, "***")
+            raise SystemExit(f"falhou o envio ({type(e).__name__}): {msg[:500]}")
     print(f"ok. Space: {url}")
     print(f"Site:  https://{a.space.replace('/', '-').replace('_', '-').lower()}.hf.space")
     return 0
