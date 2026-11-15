@@ -5,7 +5,7 @@ Ferramenta web de planejamento: para um local do polo sul lunar e uma data de po
 Feita para planejadores de missão, educadores e público geral.
 
 > **Estado atual:** efemérides **reais** (Sol e Terra) em `data/sky/` e horizonte **real** (LOLA) em
-> `data/horizon/` para os 4 locais polares. Só o Apollo 11, fora dos mapas polares, continua com horizonte
+> `data/horizon/` para os 5 locais polares. Só o Apollo 11, fora dos mapas polares, continua com horizonte
 > mock (`"mock": true`). Dados 100% falsos ficam em `data_mock/`.
 
 ## Arquitetura
@@ -39,13 +39,14 @@ Feita para planejadores de missão, educadores e público geral.
 ```
 .
 ├── pipeline/
-│   ├── config/sites.yaml       # locais analisados (coordenadas aproximadas)
+│   ├── config/sites.yaml       # locais analisados (origem de cada ponto anotada)
 │   ├── ephemeris.py            # Sol/Terra vistos do local: biblioteca + CLI (Skyfield, DE440)
 │   ├── horizon.py              # horizonte do terreno (DEMs do LOLA): biblioteca + CLI
 │   ├── metrics.py              # visibilidade, métricas, score, incerteza, atraso
 │   ├── export.py               # data/sites.json, _meta.json e --check do contrato
 │   ├── tests/                  # pytest (sem rede)
 │   ├── tools/gerar_mock.py     # dados falsos em data_mock/
+│   ├── tools/escolher_pontos.py   # deriva pontos de pouso do DEM (topo, borda mais iluminada)
 │   └── tools/validar_horizons.py  # confere ephemeris contra a API Horizons
 ├── web/                        # front estático
 ├── data/                       # sites.json, _meta.json, horizon/<id>.json, sky/<id>.json, sky/_meta.json
@@ -215,8 +216,8 @@ função (`regra_visivel`), para a equipe poder trocar por "fração do disco".
 | `calcular_metricas` (720 h, com incerteza) | ~9 ms |
 | `serie_por_atraso` (15 atrasos) | ~9 ms |
 | `horizon.calcular_horizonte` (360 raios × ~2.300 pontos) | ~0,3 s por local |
-| `export --check` (24 arquivos) | ~0,8 s |
-| `pytest pipeline/tests` (115 testes) | ~3 s |
+| `export --check` (28 arquivos) | ~0,8 s |
+| `pytest pipeline/tests` (122 testes) | ~5 s |
 
 ## Validação feita
 
@@ -226,11 +227,12 @@ função (`regra_visivel`), para a equipe poder trocar por "fração do disco".
   - Os dois DEMs concordam entre si (diferença mediana de 1,6 m em 2.000 pontos).
   - Em testes sintéticos, terreno plano dá a depressão teórica do horizonte (−√(2h/R)), e uma montanha
     posta a leste aparece em 90°, a norte em 0°.
-  - O centro da Haworth tem horizonte ≥ 2,9° em todas as direções. Como o Sol nunca passa de ~1,6°, dá
-    0% de Sol, coerente com a sombra permanente conhecida do fundo da cratera.
-  - O topo do Maciço Malapert (−85,99°, 2,08°) tem horizonte abaixo de 0° em todas as direções e vê Sol e
-    Terra na maior parte do ano.
-- **pytest**: 35 testes de efemérides, 21 de horizonte, 51 de métricas e 8 de export/contrato. Incluem casos
+  - O fundo da Haworth (−87,45°, −4,14°) tem horizonte ≥ 2,9° em todas as direções. Como o Sol nunca passa
+    de ~1,6°, dá 0% de Sol, coerente com a sombra permanente conhecida do fundo da cratera.
+  - O topo do Maciço Malapert tem horizonte abaixo de 0° em todas as direções.
+  - O melhor ponto da borda da Shackleton tem Sol em 80% do ano, dentro da faixa de 80–90% citada para os
+    picos da borda.
+- **pytest**: 36 testes de efemérides, 23 de horizonte, 55 de métricas e 8 de export/contrato. Incluem casos
   sintéticos com resultado conhecido (12 h de Sol por dia → 0,5), fronteira do disco, classes, incerteza,
   série por atraso e integração com `data/sky` real + `data_mock/horizon`.
 - `export --check` sem erros em `data/` e `data_mock/`.
@@ -243,18 +245,22 @@ função (`regra_visivel`), para a equipe poder trocar por "fração do disco".
 - Lua esférica, sem refração; o raio do disco usa a distância instantânea.
 - Comunicação = só **visada direta** Terra–local. **Fora do escopo:** trajetória Terra–Lua, disponibilidade
   de antenas na Terra (DSN etc.) e satélites de **relé**. Também ficam de fora simulação térmica e 3D realista.
-- **O resultado depende muito da coordenada exata.** As de `sites.yaml` são aproximadas e várias caem em
-  pontos ruins para pouso. Malapert (−86°, 0°) fica na encosta, 370 m abaixo do topo: Sol em 43% e Terra
-  em 39% do ano, contra 77% e 84% no topo. O ponto de Haworth é o centro da cratera, em sombra permanente
-  (0% de Sol); o de Nobile também é um centro de cratera.
+- **O resultado depende muito da coordenada exata.** No topo estreito do Malapert, mudar o ponto em
+  ~170 m muda o Sol de 66% para 77%. Na encosta do maciço, 370 m abaixo do topo, dá só 43%. Os números
+  valem para o ponto exato, não para a região inteira.
+- **Não há coordenadas oficiais públicas** dos pontos do Artemis III. Os locais de `sites.yaml` são pontos
+  publicados (Nobile Rim 2, pouso da IM-2) ou derivados do DEM com critério declarado (topo do Malapert e
+  ponto com mais Sol na borda da Shackleton e da Haworth); cada um tem a origem anotada no YAML.
 - Resolução de 80–240 m: relevo menor que isso (rochas, pequenas crateras) não entra no horizonte.
 - Apollo 11 continua com horizonte mock.
 
 ## Pendências
 
-- **Coordenadas dos locais**: trocar os centros de cratera e os pontos aproximados de `sites.yaml` por
-  pontos de pouso oficiais (por exemplo, as regiões candidatas do Artemis III) e rodar de novo
-  `python -m pipeline.horizon`.
+- **Coordenadas**: trocar os pontos derivados por pontos oficiais quando a NASA publicar; conferir o ponto
+  de Nobile Rim 2 no texto completo do artigo. Depois de trocar um ponto, rode de novo
+  `python -m pipeline.ephemeris ... --site <id>`, `python -m pipeline.horizon --site <id>` e
+  `python -m pipeline.export --out data`. Para refazer os pontos derivados:
+  `python pipeline/tools/escolher_pontos.py` (~4 min).
 - **Altura do observador** de 2 m a confirmar (antena, painel).
 - Conferir o horizonte com uma referência publicada (mapas de iluminação do LOLA/PGDA).
 - **API** (`api/`, outra tarefa): importar `calcular_metricas`, `serie_por_atraso`, `indice_de` e
