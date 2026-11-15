@@ -125,7 +125,7 @@ period. Every write is atomic (temporary file + rename).
 
 ## Hosting
 
-**Free, static (current choice): Hugging Face Space, static SDK.** The site runs without any server:
+**Free, static (current choice): Hugging Face Space, static SDK — live at https://adryelmartinss-landerbnb.static.hf.space.** The site runs without any server:
 when the API is not available (or the page is built with `<meta name="api-base" content="static">`), the
 front end switches to **static mode** and computes every metric in the browser with `web/js/calculo.js`, a
 JavaScript port of `pipeline/metrics.py`. A test (`web/tests/calculo.test.mjs`) checks that it returns
@@ -134,8 +134,8 @@ Static mode reads the precomputed `data/` (2027), so landing dates are limited t
 (3D Moon, the 5 steps, battery, delay simulator) works the same.
 
 ```powershell
-$env:HF_TOKEN = "hf_..."                                    # Hugging Face token with Write access
-python pipeline/tools/publicar_hf.py --space USER/landerbnb  # builds the static site from HEAD and pushes it
+# put HF_TOKEN=hf_... (Write token) in the git-ignored .env file
+python pipeline/tools/publicar_hf.py --space USER/landerbnb  # token read from .env (HF_TOKEN=...); builds and uploads
 python pipeline/tools/publicar_hf.py --space USER/landerbnb --so-montar site_out   # build only, to inspect
 ```
 

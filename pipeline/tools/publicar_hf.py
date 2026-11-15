@@ -157,7 +157,11 @@ def main(argv=None) -> int:
             msg = str(e).replace(token, "***")
             raise SystemExit(f"falhou o envio ({type(e).__name__}): {msg[:500]}")
     print(f"ok. Space: {url}")
-    print(f"Site:  https://{a.space.replace('/', '-').replace('_', '-').lower()}.hf.space")
+    try:  # Spaces estáticos ficam em <usuario>-<nome>.static.hf.space
+        site = HfApi(token=token).space_info(a.space).host
+    except Exception:
+        site = f"https://{a.space.replace('/', '-').replace('_', '-').lower()}.static.hf.space"
+    print(f"Site:  {site}")
     return 0
 
 
