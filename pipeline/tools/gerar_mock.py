@@ -100,14 +100,14 @@ def mock_sky(site, rng):
         sub_lat = 1.54 * math.sin(2 * math.pi * t / DRACONIC_YEAR)
         sub_lon = (sun_phase - 360.0 * t / SYNODIC + 180) % 360 - 180
         az, el = az_el(site["lat"], site["lon"], sub_lat, sub_lon)
-        sun["az"].append(round(az, 2))
+        sun["az"].append(round(az, 2) % 360.0)
         sun["el"].append(round(el, 2))
         # Terra: rotação síncrona -> ponto sub-Terra perto de (0°, 0°),
         # oscilando só pela libração (movimento lento, ~±7°).
         e_lat = 6.7 * math.sin(2 * math.pi * t / LIB_LAT)
         e_lon = 7.9 * math.sin(2 * math.pi * t / LIB_LON)
         az, el = az_el(site["lat"], site["lon"], e_lat, e_lon)
-        earth["az"].append(round(az, 2))
+        earth["az"].append(round(az, 2) % 360.0)
         earth["el"].append(round(el, 2))
     return {
         "mock": True,
