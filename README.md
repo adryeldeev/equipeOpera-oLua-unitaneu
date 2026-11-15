@@ -28,7 +28,7 @@ Feita para planejadores de missão, educadores e público geral.
    chama ephemeris + metrics            data/*.json (plano B) e --check
             │                                    │
             └────────────►  front  ◄─────────────┘
-                 hoje: web/ (HTML/JS puro); depois: React
+                 web/ (LanderBnB: HTML/CSS/JS + Three.js)
 ```
 
 - **pipeline/**: cálculo em Python. Não conhece o front.
@@ -49,7 +49,7 @@ Feita para planejadores de missão, educadores e público geral.
 │   ├── tools/escolher_pontos.py   # deriva pontos de pouso do DEM (topo, borda mais iluminada)
 │   └── tools/validar_horizons.py  # confere ephemeris contra a API Horizons
 ├── api/                        # FastAPI: main.py, tests/, Dockerfile, requirements*.txt
-├── web/                        # front estático
+├── web/                        # front LanderBnB: index.html, style.css, js/, assets/, tests/
 ├── data/                       # sites.json, _meta.json, horizon/<id>.json, sky/<id>.json, sky/_meta.json
 ├── data_mock/                  # mesmo contrato, dados falsos
 ├── cache/                      # kernels, DEMs, respostas do Horizons (fora do git)
@@ -67,12 +67,15 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r api/requirements-dev.txt     # inclui o pipeline e o pytest
 
-python -m http.server 8000                  # front, na RAIZ do repositório
-uvicorn api.main:app --port 8001 --reload   # API, em outro terminal, também na raiz
+uvicorn api.main:app --port 8001            # na RAIZ do repositório: sobe a API e serve o front
 ```
 
-Abra http://localhost:8000/web/ (front) e http://localhost:8001/docs (API). Abrir o `web/index.html` com duplo clique **não funciona**, porque o
-navegador bloqueia a leitura dos JSONs em `file://`.
+Abra **http://localhost:8001/**. Esse endereço abre o front, e a documentação da API fica em
+http://localhost:8001/docs.
+
+Também dá para servir o front à parte (`python -m http.server 8000` na raiz e abrir
+http://localhost:8000/web/); ele encontra a API em `localhost:8001` sozinho. Abrir o `web/index.html`
+com duplo clique **não funciona**, porque o navegador bloqueia `fetch` em `file://`.
 
 Se o `Activate.ps1` for bloqueado: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
 
@@ -115,6 +118,34 @@ O `export` **não recalcula** céu nem horizonte: gera `data/sites.json` e `data
 quais arquivos são mock) e aponta o que falta ou não cobre o período pedido. Toda escrita é atômica
 (arquivo temporário + rename).
 
+## Front (web/): LanderBnB
+
+Visual do LanderBnB (branch `feature/landerbnb`) ligado à API, em HTML/CSS/JS puro (sem build). O
+Three.js vem do CDN jsdelivr.
+
+| Parte | De onde vêm os dados |
+|---|---|
+| Cards dos locais (classe, % de Sol e de Terra, score e faixa de incerteza) | `/api/sites` + `/api/sites/{id}/metricas` |
+| 1. Localização | `/api/sites` |
+| 2. Data/Hora | vira o `inicio` (UTC) de todas as chamadas; janela de 720 h |
+| 3. Sol/Terra | panorama do relevo (`/horizonte`) com o Sol e a Terra no instante (`/visibilidade`) |
+| 4. Energia | `/metricas` + simulação de bateria hora a hora com `/visibilidade` |
+| 5. Comunicação | `/metricas` (% de Terra, maior período sem contato, Sol e Terra juntos) |
+| Simulador de atraso | `/atrasos` (0 a 14 dias) com gráfico de barras e limiares |
+| Lua 3D | luz na direção real do Sol; marcadores nas coordenadas reais |
+
+- **Lua 3D**: a esfera usa as texturas do NASA SVS CGI Moon Kit (`lroc_color_2k.jpg` e `ldem_3_8bit.jpg`).
+  Por cima vai uma **calota do polo sul** (−80° a −90°) gerada do mesmo DEM do LOLA do horizonte
+  (`python pipeline/tools/gerar_texturas_lua.py`, precisa de `pillow`). A orientação foi conferida na textura
+  (Tycho, Copérnico, Mare Crisium) e por testes. O "para cima" da câmera é lon 0°, para ela poder olhar o
+  polo de frente.
+- **Simulação de bateria**: com Sol visível, gera potência × eficiência; sem Sol, gera 0. O consumo é
+  constante e a carga fica entre 0 e a capacidade. É um modelo simples, declarado na tela.
+- **Link compartilhável**: a URL guarda o cenário, por exemplo
+  `/web/?local=malapert&data=2027-03-01&hora=12:00&etapa=energia&atraso=5`.
+- **Sem API**: a página mostra um aviso com o comando para subir a API e lista os locais de `data/sites.json`.
+- **Testes** das funções puras (geometria, UTC, bateria): `node --test web/tests/geo.test.mjs`.
+
 ## API (api/main.py)
 
 FastAPI sobre o pipeline. Documentação interativa em http://localhost:8001/docs. Todas as rotas são GET
@@ -128,6 +159,7 @@ e devolvem JSON.
 | `/api/sites/{id}/ceu?inicio=&dias=30&passo_min=60` | Sol e Terra no período (contrato do céu) |
 | `/api/sites/{id}/metricas?inicio=&janela_h=720&ok=0.5&crit=0.2` | saída de `calcular_metricas` + `fonte` |
 | `/api/sites/{id}/atrasos?inicio=&janela_h=720&atraso_max_dias=14` | `{..., serie:[{atraso_dias, score, class}]}` |
+| `/api/sites/{id}/visibilidade?inicio=&dias=30` | instante a instante: `az`, `el`, `rad_deg`, `horizonte` naquele azimute e `visivel` (Sol e Terra) |
 
 Exemplo: `GET /api/sites/malapert/metricas?inicio=2027-03-01T00:00:00Z`
 
@@ -296,6 +328,6 @@ função (`regra_visivel`), para a equipe poder trocar por "fração do disco".
 - Conferir o horizonte com uma referência publicada (mapas de iluminação do LOLA/PGDA).
 - **Janela padrão** de 720 h a confirmar.
 - Regra do disco ("qualquer parte") vs. "fração do disco": decisão da equipe.
-- **Front**: consumir a API (local, data de pouso, métricas, faixa de incerteza, gráfico de atraso). O
-  React ainda não existe; hoje o `web/` só lista os locais.
 - API: o plano B só cobre 2027 com passo de 60 min. Para outros anos, é preciso gerar `data/sky` de novo.
+- Front: a Lua 3D não desenha sombras projetadas (o relevo do polo é sombreado pela inclinação, não por
+  obstáculos). A informação de sombra real está nos números e no panorama da etapa 3.
