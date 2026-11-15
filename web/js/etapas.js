@@ -19,6 +19,7 @@ const estado = {
     atrasos: null,          // /atrasos do selecionado
     conectada: false,
     pedido: 0,              // descarta respostas de pedidos antigos
+    avisoBase: ["", "info"],  // aviso permanente (modo estático / plano B)
 };
 
 // ---------------------------------------------------------------- utilidades
@@ -124,7 +125,8 @@ async function recarregarTudo() {
     }));
     if (pedido !== estado.pedido) return;
     const erros = [...estado.metricas.values()].filter((m) => m.erro);
-    aviso(erros.length ? `Some sites failed: ${erros[0].erro}` : "");
+    if (erros.length) aviso(`Some sites failed: ${erros[0].erro}`, "erro");
+    else aviso(...estado.avisoBase);
     await carregarAtrasos();
     atualizarPaineis();
 }
@@ -396,12 +398,23 @@ async function iniciar() {
         estado.conectada = true;
         estado.padroes = { ...estado.padroes, ...saude.padroes };
         if (saude.intervalo_suportado) {
-            $("data-missao").min = saude.intervalo_suportado.inicio.slice(0, 10);
-            $("data-missao").max = saude.intervalo_suportado.fim.slice(0, 10);
+            const min = saude.intervalo_suportado.inicio.slice(0, 10);
+            const max = saude.intervalo_suportado.fim.slice(0, 10);
+            $("data-missao").min = min;
+            $("data-missao").max = max;
+            // Hoje fora dos dados disponíveis (ex.: modo estático só com 2027): começa no 1º dia.
+            if (d < min || d > max) $("data-missao").value = min;
         }
-        aviso(saude.efemerides ? "" : `API in fallback mode (year 2027 only): ${saude.erro_efemerides}`, "alerta");
+        if (saude.modo === "estatico") {
+            const ini = saude.intervalo_suportado.inicio.slice(0, 10), fim = saude.intervalo_suportado.fim.slice(0, 10);
+            estado.avisoBase = [`Static mode: results are computed in your browser from precomputed data ` +
+                  `(JPL DE440 sky + LRO LOLA terrain). Landing dates from ${ini} to ${fim}.`, "info"];
+        } else {
+            estado.avisoBase = [saude.efemerides ? "" : `API in fallback mode (year 2027 only): ${saude.erro_efemerides}`, "alerta"];
+        }
+        aviso(...estado.avisoBase);
         estado.sites = await api.sites();
-        console.info(`API conectada em ${base}`);
+        console.info(`Dados: ${saude.modo === "estatico" ? "modo estático" : "API"} em ${base}`);
     } catch (e) {
         estado.sites = await sitesSemApi();
         aviso(`${e.message}. From the project root run: uvicorn api.main:app --port 8001 ` +
