@@ -1,7 +1,7 @@
 """Publica o site num Hugging Face Space ESTÁTICO (gratuito).
 
     # Cole o token (tipo "Write") no arquivo .env da raiz:  HF_TOKEN=hf_...
-    python pipeline/tools/publicar_hf.py --space adryelmartinss/landerbnb
+    python pipeline/tools/publicar_hf.py --space operacaoLua/landerbnb
 
     # Só montar o pacote numa pasta, sem enviar (para conferir):
     python pipeline/tools/publicar_hf.py --space x/y --so-montar saida_site
@@ -114,7 +114,7 @@ def montar(ref: str, destino: Path) -> str:
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="Publica o site num Hugging Face Space estático.")
-    p.add_argument("--space", required=True, help="USUARIO/NOME do Space, ex.: adryelmartinss/landerbnb")
+    p.add_argument("--space", required=True, help="USUARIO/NOME do Space, ex.: operacaoLua/landerbnb")
     p.add_argument("--ref", default="HEAD", help="commit/branch a publicar (padrão: HEAD)")
     p.add_argument("--so-montar", metavar="PASTA", help="só monta o site nessa pasta (nova), sem enviar")
     a = p.parse_args(argv)
