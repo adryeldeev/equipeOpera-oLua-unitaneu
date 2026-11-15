@@ -1,0 +1,12 @@
+# Configuração do Render (render.com): New -> Blueprint -> este repositório.
+# Um serviço só: a API (FastAPI) servindo também o site (web/).
+services:
+  - type: web
+    name: landerbnb
+    runtime: docker
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: .
+    plan: free
+    branch: main
+    autoDeploy: true
+    healthCheckPath: /api/saude
