@@ -13,11 +13,12 @@
   "step_min": 60,
   "n_instantes": 8760,
   "sites": [
-    "shackleton",
-    "malapert",
-    "nobile",
+    "apollo11",
     "haworth",
-    "apollo11"
+    "malapert",
+    "mons_mouton",
+    "nobile",
+    "shackleton"
   ],
-  "gerado_em": "2026-11-14T18:43:16Z"
+  "gerado_em": "2026-11-15T19:00:02Z"
 }

@@ -1,11 +1,12 @@
 {
-  "gerado_em": "2026-11-15T18:45:37Z",
+  "gerado_em": "2026-11-15T19:00:03Z",
   "sites_fonte": "pipeline/config/sites.yaml",
   "sites": [
     "shackleton",
     "malapert",
     "nobile",
     "haworth",
+    "mons_mouton",
     "apollo11"
   ],
   "locais": {
@@ -34,6 +35,14 @@
       }
     },
     "haworth": {
+      "sky": {
+        "mock": false
+      },
+      "horizon": {
+        "mock": false
+      }
+    },
+    "mons_mouton": {
       "sky": {
         "mock": false
       },

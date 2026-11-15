@@ -1,38 +1,47 @@
 [
   {
     "id": "shackleton",
-    "name": "Cratera Shackleton",
-    "lat": -89.9,
-    "lon": 0.0,
+    "name": "Borda da Shackleton",
+    "lat": -89.7682,
+    "lon": -156.4384,
     "category": "polo_sul",
-    "mission": "Artemis (região candidata)",
+    "mission": "Artemis (borda da Shackleton)",
     "mock": false
   },
   {
     "id": "malapert",
-    "name": "Maciço Malapert",
-    "lat": -86.0,
-    "lon": 0.0,
+    "name": "Topo do Maciço Malapert",
+    "lat": -85.9876,
+    "lon": 2.0528,
     "category": "polo_sul",
-    "mission": "Artemis III (região candidata)",
+    "mission": "Artemis III (região Malapert Massif)",
     "mock": false
   },
   {
     "id": "nobile",
-    "name": "Cratera Nobile",
-    "lat": -85.29,
-    "lon": 53.54,
+    "name": "Nobile Rim 2",
+    "lat": -84.20156,
+    "lon": 60.69989,
     "category": "polo_sul",
-    "mission": "VIPER (alvo original)",
+    "mission": "Artemis III (região Nobile Rim 2)",
     "mock": false
   },
   {
     "id": "haworth",
-    "name": "Cratera Haworth",
-    "lat": -87.45,
-    "lon": -4.14,
+    "name": "Borda da Haworth",
+    "lat": -86.8829,
+    "lon": -19.0389,
     "category": "polo_sul",
-    "mission": "Artemis III (região candidata)",
+    "mission": "Artemis III (região Haworth)",
+    "mock": false
+  },
+  {
+    "id": "mons_mouton",
+    "name": "Mons Mouton (pouso da IM-2)",
+    "lat": -84.7906,
+    "lon": 29.1957,
+    "category": "polo_sul",
+    "mission": "IM-2 (2025); Artemis III (região Mons Mouton)",
     "mock": false
   },
   {
