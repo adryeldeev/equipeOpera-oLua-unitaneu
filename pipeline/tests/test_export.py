@@ -95,7 +95,7 @@ def test_exportar_grava_sites_e_meta(tmp_path, capsys):
     rc = ex.main(["--out", str(out)])
     assert rc == 0, capsys.readouterr().out
     sites = _ler(out / "sites.json")
-    assert [s["id"] for s in sites] == ["shackleton", "malapert", "nobile", "haworth", "apollo11"]
+    assert [s["id"] for s in sites] == ["shackleton", "malapert", "nobile", "haworth", "mons_mouton", "apollo11"]
     assert all(s["mock"] is False for s in sites)
     meta = _ler(out / "_meta.json")
     assert meta["gerado_em"].endswith("Z")

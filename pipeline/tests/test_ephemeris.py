@@ -54,8 +54,11 @@ def test_sol_rasante_no_polo(ano, site):
     assert np.abs(el).max() <= limite
 
 
-def test_shackleton_abaixo_de_1_7_graus(ano):
-    assert np.abs(ano["shackleton"]["sun"]["el"]).max() <= 1.7
+def test_quase_no_polo_abaixo_de_1_7_graus():
+    # Ponto fixo a 0,1° do polo (o local "shackleton" do YAML agora fica na
+    # borda, a 0,23° do polo, onde o limite é a fórmula do teste acima).
+    ceu = ef.gerar_ceu({"id": "polo", "lat": -89.9, "lon": 0.0}, INICIO, 365, 120)
+    assert np.abs(ceu["sun"]["el"]).max() <= 1.7
 
 
 # 2. Raio angular ------------------------------------------------------------

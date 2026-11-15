@@ -14,7 +14,7 @@ from pipeline import metrics as m
 from pipeline.export import validar_metricas
 
 RAIZ = Path(__file__).resolve().parents[2]
-SITES = ["shackleton", "malapert", "nobile", "haworth", "apollo11"]
+SITES = ["shackleton", "malapert", "nobile", "haworth", "mons_mouton", "apollo11"]
 UTC = timezone.utc
 
 

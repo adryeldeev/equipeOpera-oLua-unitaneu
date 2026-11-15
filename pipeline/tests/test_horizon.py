@@ -16,7 +16,7 @@ from pipeline import horizon as hz
 from pipeline.export import validar_horizonte
 
 RAIZ = Path(__file__).resolve().parents[2]
-POLARES = ["shackleton", "malapert", "nobile", "haworth"]
+POLARES = ["shackleton", "malapert", "nobile", "haworth", "mons_mouton"]
 
 
 # ---------------------------------------------------------------- sintéticos
@@ -135,9 +135,14 @@ def test_arquivos_reais_no_contrato(site):
     assert h["meta"]["alcance_min_m"] >= 250_000  # relevo distante coberto
 
 
-def test_haworth_e_sombra_permanente():
-    """O ponto de Haworth (centro da cratera) nunca vê o Sol (~1,6° no máx.)."""
-    h = json.loads((RAIZ / "data" / "horizon" / "haworth.json").read_text(encoding="utf-8"))
-    if h.get("mock"):
-        pytest.skip("data/horizon ainda é mock")
+def test_fundo_da_haworth_e_sombra_permanente(dems):
+    """O centro da cratera Haworth nunca vê o Sol (que não passa de ~1,6°)."""
+    h = hz.calcular_horizonte({"id": "haworth_centro", "lat": -87.45, "lon": -4.14}, dems)
     assert min(h["horizon_deg"]) > 1.7
+
+
+def test_topo_do_malapert_ve_tudo_abaixo(dems):
+    """No pixel mais alto do maciço o horizonte fica abaixo de 0° em todo azimute."""
+    h = hz.calcular_horizonte({"id": "topo", "lat": -85.9876, "lon": 2.0528}, dems)
+    assert max(h["horizon_deg"]) < 0
+    assert h["meta"]["altura_local_m"] == pytest.approx(5172, abs=1)
