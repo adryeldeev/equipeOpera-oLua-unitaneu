@@ -1,0 +1,56 @@
+[
+  {
+    "id": "shackleton",
+    "name": "Shackleton Rim",
+    "lat": -89.7682,
+    "lon": -156.4384,
+    "category": "polo_sul",
+    "mission": "Artemis (Shackleton rim)",
+    "mock": true
+  },
+  {
+    "id": "malapert",
+    "name": "Malapert Massif Summit",
+    "lat": -85.9876,
+    "lon": 2.0528,
+    "category": "polo_sul",
+    "mission": "Artemis III (Malapert Massif region)",
+    "mock": true
+  },
+  {
+    "id": "nobile",
+    "name": "Nobile Rim 2",
+    "lat": -84.20156,
+    "lon": 60.69989,
+    "category": "polo_sul",
+    "mission": "Artemis III (Nobile Rim 2 region)",
+    "mock": true
+  },
+  {
+    "id": "haworth",
+    "name": "Haworth Rim",
+    "lat": -86.8829,
+    "lon": -19.0389,
+    "category": "polo_sul",
+    "mission": "Artemis III (Haworth region)",
+    "mock": true
+  },
+  {
+    "id": "mons_mouton",
+    "name": "Mons Mouton (IM-2 landing site)",
+    "lat": -84.7906,
+    "lon": 29.1957,
+    "category": "polo_sul",
+    "mission": "IM-2 (2025); Artemis III (Mons Mouton region)",
+    "mock": true
+  },
+  {
+    "id": "apollo11",
+    "name": "Apollo 11 (Sea of Tranquility)",
+    "lat": 0.674,
+    "lon": 23.473,
+    "category": "referencia",
+    "mission": "Apollo 11 (1969), non-polar reference",
+    "mock": true
+  }
+]

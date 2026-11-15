@@ -1,0 +1,10 @@
+.git
+.venv
+cache
+**/__pycache__
+.pytest_cache
+data_mock
+*.bsp
+*.bpc
+*.img
+.env

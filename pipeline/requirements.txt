@@ -1,0 +1,7 @@
+# Python 3.11 ou 3.12
+skyfield>=1.48      # efemérides (Sol/Terra vistos da Lua) com kernels JPL DE440
+jplephem>=2.21      # leitura de .bsp/.bpc (usado pelo Skyfield)
+numpy>=1.26
+pyyaml>=6.0         # leitura de config/sites.yaml
+spiceypy>=6.0       # reservado: SPICE, caso seja preciso conferir frames
+requests>=2.31      # SOMENTE para validar resultados contra a API Horizons (JPL)

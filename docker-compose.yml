@@ -1,0 +1,37 @@
+services:
+  # Servidor estático do frontend: http://localhost:8080/web/
+  # web/ e data/ são montados lado a lado, então o caminho relativo
+  # "../data/" funciona igual ao "python -m http.server" na raiz.
+  web:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web:/usr/share/nginx/html/web:ro
+      - ./data:/usr/share/nginx/html/data:ro
+
+  # API: http://localhost:8001/docs
+  # Na 1ª subida baixa ~45 MB de kernels para cache/ (depois reaproveita).
+  # Sem kernels/rede, segue no plano B (data/sky).
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./data:/app/data:ro
+      - ./cache:/app/cache
+
+  # Pipeline Python: só roda sob demanda.
+  #   docker compose run --rm pipeline
+  pipeline:
+    build:
+      context: .
+      dockerfile: pipeline/Dockerfile
+    profiles: ["tools"]
+    volumes:
+      - ./pipeline:/app/pipeline
+      - ./data:/app/data
+      - ./data_mock:/app/data_mock
+      - ./cache:/app/cache

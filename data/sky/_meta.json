@@ -1,0 +1,24 @@
+{
+  "fonte": "skyfield",
+  "skyfield_version": "1.55",
+  "kernels": [
+    "de440s.bsp",
+    "moon_pa_de440_200625.bpc",
+    "moon_de440_250416.tf"
+  ],
+  "frame": "MOON_ME",
+  "frame_spice": "MOON_ME_DE440_ME421",
+  "inicio": "2027-01-01T00:00:00Z",
+  "fim": "2027-12-31T23:00:00Z",
+  "step_min": 60,
+  "n_instantes": 8760,
+  "sites": [
+    "apollo11",
+    "haworth",
+    "malapert",
+    "mons_mouton",
+    "nobile",
+    "shackleton"
+  ],
+  "gerado_em": "2026-11-15T19:00:02Z"
+}

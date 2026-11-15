@@ -1,0 +1,20 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+
+# Segredos e lixo de sistema
+.env
+.DS_Store
+
+# Cache local (kernels baixados, recortes de DEM etc.), exceto o marcador
+cache/*
+!cache/.gitkeep
+
+# Arquivos pesados: kernels SPICE/JPL e rasters do LOLA
+*.bsp
+*.bpc
+*.tif
+*.img
+
+# Observação: os JSONs de data/ NÃO são ignorados (são o contrato com o frontend).

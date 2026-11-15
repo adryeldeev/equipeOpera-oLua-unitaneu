@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest>=8
+pillow>=10          # só para pipeline/tools/gerar_texturas_lua.py
+huggingface_hub>=0.26  # só para pipeline/tools/publicar_hf.py

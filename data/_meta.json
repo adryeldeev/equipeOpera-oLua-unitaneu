@@ -1,0 +1,62 @@
+{
+  "gerado_em": "2026-11-15T21:28:06Z",
+  "sites_fonte": "pipeline/config/sites.yaml",
+  "sites": [
+    "shackleton",
+    "malapert",
+    "nobile",
+    "haworth",
+    "mons_mouton",
+    "apollo11"
+  ],
+  "locais": {
+    "shackleton": {
+      "sky": {
+        "mock": false
+      },
+      "horizon": {
+        "mock": false
+      }
+    },
+    "malapert": {
+      "sky": {
+        "mock": false
+      },
+      "horizon": {
+        "mock": false
+      }
+    },
+    "nobile": {
+      "sky": {
+        "mock": false
+      },
+      "horizon": {
+        "mock": false
+      }
+    },
+    "haworth": {
+      "sky": {
+        "mock": false
+      },
+      "horizon": {
+        "mock": false
+      }
+    },
+    "mons_mouton": {
+      "sky": {
+        "mock": false
+      },
+      "horizon": {
+        "mock": false
+      }
+    },
+    "apollo11": {
+      "sky": {
+        "mock": false
+      },
+      "horizon": {
+        "mock": true
+      }
+    }
+  }
+}

@@ -1,0 +1,3 @@
+-r requirements.txt
+-r ../pipeline/requirements-dev.txt
+httpx>=0.27         # TestClient do FastAPI

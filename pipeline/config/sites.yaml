@@ -1,0 +1,70 @@
+# Locais de pouso analisados pela ferramenta.
+#
+# Não há coordenadas oficiais públicas dos pontos das regiões candidatas do
+# Artemis III (a NASA divulga só os nomes e um mapa). Cada ponto abaixo diz
+# de onde veio:
+#   publicado  coordenada escrita numa fonte (citada)
+#   derivado   calculado com pipeline/tools/escolher_pontos.py sobre o DEM
+#              do LOLA, com o critério indicado (reprodutível)
+# O resultado muda bastante em ~100 m (ex.: topo do Malapert), então trocar
+# um ponto exige rodar de novo ephemeris e horizon para ele.
+#
+# Convenções (contrato de dados):
+#   lat: graus, negativa no hemisfério sul (planetocêntrica)
+#   lon: graus, LESTE positiva (-180..180)
+#   id:  minúsculo, sem espaços; vira nome de arquivo em data/horizon e data/sky
+
+sites:
+  # derivado: ponto com mais Sol no anel da borda (0,9–1,3 × raio de 10,5 km)
+  # em volta do centro da cratera (-89,67°, 129,78°E, Wikipedia).
+  - id: shackleton
+    name: Shackleton Rim
+    lat: -89.7682
+    lon: -156.4384
+    category: polo_sul
+    mission: Artemis (Shackleton rim)
+
+  # derivado: centro do pixel mais alto do LDEM_80S_80M (5.172 m) a até
+  # 15 km de (-86°, 0°); o pico fica "quase em 0° de longitude".
+  - id: malapert
+    name: Malapert Massif Summit
+    lat: -85.9876
+    lon: 2.0528
+    category: polo_sul
+    mission: Artemis III (Malapert Massif region)
+
+  # publicado: melhor ponto da região Nobile Rim 2 segundo "Evaluating
+  # potential landing sites for the Artemis III mission using a multi-criteria
+  # decision making approach" (2024). TODO: conferir no texto completo.
+  - id: nobile
+    name: Nobile Rim 2
+    lat: -84.20156
+    lon: 60.69989
+    category: polo_sul
+    mission: Artemis III (Nobile Rim 2 region)
+
+  # derivado: ponto com mais Sol no anel da borda (0,9–1,3 × raio de 25,5 km)
+  # em volta do centro da cratera (-87,45°, -4,14°, conferido no DEM: o fundo
+  # fica ~3,2 km abaixo do anel).
+  - id: haworth
+    name: Haworth Rim
+    lat: -86.8829
+    lon: -19.0389
+    category: polo_sul
+    mission: Artemis III (Haworth region)
+
+  # publicado: ponto de pouso real da IM-2 (Intuitive Machines, 2025),
+  # Wikipedia "Mons Mouton".
+  - id: mons_mouton
+    name: Mons Mouton (IM-2 landing site)
+    lat: -84.7906
+    lon: 29.1957
+    category: polo_sul
+    mission: IM-2 (2025); Artemis III (Mons Mouton region)
+
+  - id: apollo11
+    name: Apollo 11 (Sea of Tranquility)
+    lat: 0.674
+    lon: 23.473
+    category: referencia
+    mission: Apollo 11 (1969), non-polar reference

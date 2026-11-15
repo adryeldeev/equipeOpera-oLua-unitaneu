@@ -1015,3 +1015,85 @@ body {
     box-shadow: 0 0 15px rgba(32, 200, 255, 0.25);
 }
 
+
+
+/* ==================================
+   INTEGRAÇÃO COM A API (acréscimos)
+================================== */
+
+.aviso-api {
+    margin: 0;
+    padding: 10px 40px;
+    font-size: 13px;
+    background: #0a2342;
+    border-bottom: 1px solid #16416a;
+    color: #c9deef;
+}
+.aviso-api[data-tipo="alerta"] { background: #3a2c07; color: #ffd98a; border-color: #6b5313; }
+.aviso-api[data-tipo="erro"] { background: #3a0d12; color: #ffb3b8; border-color: #7a1f27; }
+.aviso-api[hidden] { display: none; }
+
+.destino-lua {
+    position: absolute; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1;
+    color: #ffffff; font-size: 16px; font-weight: 600; text-align: center; pointer-events: none;
+}
+.estado-carregamento-lua {
+    position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 1;
+    color: #ffffff; font-size: 14px; text-align: center; pointer-events: none;
+}
+.estado-carregamento-lua.erro { color: #ff454f; }
+
+.etapa { cursor: pointer; }
+.etapa.feita span { background: #0d4d3a; border-color: #16c784; }
+
+/* Barras dos cards (largura vem do JS). */
+.energia-moderado { background: #f0b94b; }
+.comunicacao { background: #20c8ff; }
+.card-local.carregando { border: 1px solid #24547b; }
+.card-local .tag-mock {
+    align-self: flex-start; padding: 1px 6px; border-radius: 4px;
+    background: #3a2c07; color: #ffd98a !important; font-size: 9px !important;
+}
+.card-local .faixa-incerteza { color: #9fc5e4 !important; font-size: 10px !important; }
+.card-local .erro-card, .erro-card { color: #ff8a91 !important; font-size: 10px; }
+
+/* Panorama do céu (etapa 3). */
+.grafico-ceu { width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #24547b; }
+.ceu-fundo { fill: #0a1e35; }
+.ceu-zero { stroke: #3f6c93; stroke-dasharray: 3 3; stroke-width: 0.6; }
+.ceu-relevo { fill: #5d6b78; stroke: #b8cce3; stroke-width: 0.6; }
+.ceu-sol { fill: #ffcf5a; stroke: #fff2c7; stroke-width: 0.6; }
+.ceu-terra { fill: #20c8ff; stroke: #d5f5ff; stroke-width: 0.6; }
+.ceu-rotulo { fill: #9fc5e4; font-size: 8px; }
+.legenda-ceu { display: flex; gap: 10px; align-items: center; color: #b8cce3; font-size: 10px; }
+.legenda-ceu .chip { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: -6px; }
+.chip.relevo { background: #5d6b78; border-radius: 2px; }
+.chip.sol { background: #ffcf5a; }
+.chip.terra { background: #20c8ff; }
+.texto-sol-terra { display: flex; flex-direction: column; gap: 4px; }
+.linha-astro.ok { color: #7fe3b9; }
+.linha-astro.nao { color: #ffb3b8; }
+
+/* Simulador de atraso. */
+.grafico-atraso { width: 100%; height: 70px; display: block; margin-top: 12px; }
+.barra-atraso { fill: #24547b; }
+.barra-atraso.ideal { fill: #16c784; }
+.barra-atraso.moderado { fill: #f0b94b; }
+.barra-atraso.critico { fill: #ff454f; }
+.barra-atraso.atual { stroke: #ffffff; stroke-width: 1.5; }
+.limiar-ok, .limiar-crit { stroke-width: 0.7; stroke-dasharray: 4 3; }
+.limiar-ok { stroke: #16c784; }
+.limiar-crit { stroke: #ff454f; }
+.resultado-atraso { margin-top: 8px; color: #dce9f8; font-size: 12px; line-height: 1.4; }
+.resultado-atraso[data-classe="ideal"] { color: #16c784; }
+.resultado-atraso[data-classe="moderado"] { color: #f0b94b; }
+.resultado-atraso[data-classe="critico"] { color: #ff454f; }
+
+.rodape {
+    padding: 12px 40px; border-top: 1px solid #16416a; background: #061426;
+    color: #7f9bb8; font-size: 11px; text-align: center;
+}
+
+/* O display:flex do .marcador-local anulava o atributo hidden
+   (marcadores do outro lado da Lua apareciam no canto). */
+.marcador-local[hidden] { display: none; }
