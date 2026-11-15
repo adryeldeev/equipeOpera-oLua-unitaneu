@@ -4,7 +4,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# As wheels do rasterio para Linux já trazem o GDAL embutido,
+# Só dependências puras/wheels (o DEM do LOLA é lido direto com numpy),
 # por isso a imagem slim é suficiente.
 COPY pipeline/requirements.txt /app/pipeline/requirements.txt
 RUN pip install --no-cache-dir -r /app/pipeline/requirements.txt
