@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-11-15T16:22:38Z",
+  "gerado_em": "2026-11-15T18:45:37Z",
   "sites_fonte": "pipeline/config/sites.yaml",
   "sites": [
     "shackleton",
@@ -14,7 +14,7 @@
         "mock": false
       },
       "horizon": {
-        "mock": true
+        "mock": false
       }
     },
     "malapert": {
@@ -22,7 +22,7 @@
         "mock": false
       },
       "horizon": {
-        "mock": true
+        "mock": false
       }
     },
     "nobile": {
@@ -30,7 +30,7 @@
         "mock": false
       },
       "horizon": {
-        "mock": true
+        "mock": false
       }
     },
     "haworth": {
@@ -38,7 +38,7 @@
         "mock": false
       },
       "horizon": {
-        "mock": true
+        "mock": false
       }
     },
     "apollo11": {
