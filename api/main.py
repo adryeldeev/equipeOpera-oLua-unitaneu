@@ -199,15 +199,46 @@ def obter_ceu(site_id: str, inicio: datetime = Inicio,
               dias: float = Query(30, gt=0, le=366), passo_min: int = Passo):
     site = _site(site_id)
     ceu, i0, fonte = _ceu(site, inicio, dias * 24, passo_min)
-    if fonte != "skyfield":
-        # Plano B: recorta o período pedido do arquivo de 1 ano.
-        n = -(-int(dias * 1440) // passo_min)
-        if i0 + n > len(ceu["sun"]["el"]):
-            raise HTTPException(422, "plano B (data/sky): período fora do arquivo")
-        corte = slice(i0, i0 + n)
-        ceu = {**ceu, "start": _utc(inicio).strftime("%Y-%m-%dT%H:%M:%SZ"),
-               **{c: {k: v[corte] for k, v in ceu[c].items()} for c in ("sun", "earth")}}
-    return {**ceu, "fonte": fonte}
+    return {**_recorte(ceu, i0, dias, passo_min, inicio, fonte), "fonte": fonte}
+
+
+def _recorte(ceu, i0, dias, passo_min, inicio, fonte):
+    """No plano B, recorta o período pedido do arquivo de 1 ano."""
+    if fonte == "skyfield":
+        return ceu
+    n = -(-int(round(dias * 1440)) // passo_min)
+    if i0 + n > len(ceu["sun"]["el"]):
+        raise HTTPException(422, "plano B (data/sky): período fora do arquivo")
+    corte = slice(i0, i0 + n)
+    return {**ceu, "start": _utc(inicio).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            **{c: {k: v[corte] for k, v in ceu[c].items()} for c in ("sun", "earth")}}
+
+
+@app.get("/api/sites/{site_id}/visibilidade")
+def obter_visibilidade(site_id: str, inicio: datetime = Inicio,
+                       dias: float = Query(30, gt=0, le=60), passo_min: int = Passo,
+                       margem_graus: float = Query(0.0, ge=-5, le=5)):
+    """Linha do tempo instante a instante: posição, horizonte naquele azimute e se é visível.
+
+    Serve para o front desenhar o céu e simular bateria sem reimplementar a
+    regra de visibilidade (ela fica só no pipeline).
+    """
+    site = _site(site_id)
+    hz = _horizonte(site_id)
+    ceu, i0, fonte = _ceu(site, inicio, dias * 24, passo_min)
+    ceu = _recorte(ceu, i0, dias, passo_min, inicio, fonte)
+    v = mt.visibilidade(ceu, hz, margem_graus)
+    saida = {"site": site_id, "start": ceu["start"], "step_min": ceu["step_min"],
+             "mock": bool(ceu.get("mock")) or bool(hz.get("mock")), "fonte": _fonte(fonte, hz),
+             "regra": "visível se el + rad_deg > horizonte(az) + margem_graus"}
+    for corpo, nome, chave in (("sun", "sol", "sol_visivel"), ("earth", "terra", "terra_visivel")):
+        c = ceu[corpo]
+        saida[nome] = {
+            "az": c["az"], "el": c["el"], "rad_deg": c["rad_deg"],
+            "horizonte": [round(float(x), 3) for x in mt.horizonte_em(hz, c["az"])],
+            "visivel": v[chave].tolist(),
+        }
+    return saida
 
 
 @app.get("/api/sites/{site_id}/metricas")
@@ -251,3 +282,23 @@ def obter_atrasos(site_id: str, inicio: datetime = Inicio, janela_h: float = Jan
         "fonte": _fonte(fonte, hz),
         "serie": serie,
     }
+
+
+# ---------------------------------------------------------------- front e dados estáticos
+# Um comando só sobe tudo: http://localhost:8001/ abre o front (web/) e
+# /data/ serve os JSON do contrato (plano B do front). Como a página e a
+# API ficam na mesma origem, não depende de CORS.
+
+from fastapi.responses import RedirectResponse  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
+
+
+@app.get("/", include_in_schema=False)
+def raiz():
+    return RedirectResponse("/web/")
+
+
+if (RAIZ / "web").is_dir():
+    app.mount("/web", StaticFiles(directory=RAIZ / "web", html=True), name="web")
+if _dados_dir().is_dir():
+    app.mount("/data", StaticFiles(directory=_dados_dir()), name="data")

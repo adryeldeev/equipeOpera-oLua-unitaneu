@@ -179,3 +179,26 @@ def test_plano_b_funciona_sem_kernels(cliente, plano_b):
 def test_plano_b_limites(cliente, plano_b, params, trecho):
     r = cliente.get("/api/sites/malapert/metricas", params=params)
     assert r.status_code == 422 and trecho in r.json()["detail"]
+
+
+# ---------------------------------------------------------------- visibilidade
+
+def test_visibilidade_bate_com_metricas(cliente, com_kernels):
+    v = cliente.get("/api/sites/malapert/visibilidade", params={"inicio": INICIO, "dias": 30}).json()
+    m = cliente.get("/api/sites/malapert/metricas", params={"inicio": INICIO}).json()
+    for nome, chave in (("sol", "energy"), ("terra", "comms")):
+        assert len(v[nome]["visivel"]) == 720
+        assert sum(v[nome]["visivel"]) / 720 == m[chave]["pct"]
+        assert len(v[nome]["horizonte"]) == len(v[nome]["az"]) == 720
+    assert v["start"] == INICIO and v["step_min"] == 60 and v["mock"] is False
+
+
+def test_visibilidade_plano_b(cliente, plano_b):
+    v = cliente.get("/api/sites/haworth/visibilidade", params={"inicio": INICIO, "dias": 2}).json()
+    assert len(v["sol"]["visivel"]) == 48 and v["fonte"]["ceu"].startswith("data/sky")
+
+
+def test_serve_front_e_dados(cliente):
+    r = cliente.get("/", follow_redirects=False)
+    assert r.status_code in (302, 307) and r.headers["location"] == "/web/"
+    assert cliente.get("/data/sites.json").json() == _ler("data/sites.json")
